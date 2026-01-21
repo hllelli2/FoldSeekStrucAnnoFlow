@@ -15,3 +15,7 @@ __pycache__/
 # Distribution / packaging
 *egg-info/
 
+# Nextflow work directory
+.work/
+.nextflow/
+.nextflow.log

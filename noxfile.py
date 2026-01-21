@@ -26,8 +26,8 @@ def get_package_name():
 PYTHON_VERSION = get_python_version()
 PACKAGE_NAME = get_package_name()
 
-# Default: reuse uv-managed virtualenvs for speed
 nox.options.reuse_existing_virtualenvs = True
+nox.options.default_venv_backend = "uv"
 
 
 def uv(session, *args):

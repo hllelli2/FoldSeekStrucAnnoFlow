@@ -19,3 +19,8 @@ __pycache__/
 .work/
 .nextflow/
 .nextflow.log
+work/
+dag*
+
+# Input files
+inputs/

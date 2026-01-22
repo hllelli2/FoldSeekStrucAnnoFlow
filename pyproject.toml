@@ -4,8 +4,8 @@ version = "0.0.1"
 description = "Your project description here"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+license = "MIT"
+authors = [{ name = "Luc Elliott", email = "luc1997@liverpool.ac.uk" }]
 dependencies = [
   "click",
   "typer",
@@ -18,7 +18,7 @@ dev = [
   "coverage",
   "isort",
   "mypy",
-  "pydantic[mypy]",
+  "pydantic",
   "pytest",
   "pytest-cov",
   "pytest-pretty",
@@ -61,3 +61,7 @@ exclude = [
   "README.md",
   # add other files or directories to exclude from linting here
 ]
+
+[tool.setuptools.packages.find]
+include = ["foldseekstrucannoflow*"]
+exclude = ["works/*"]

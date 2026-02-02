@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: alpine:3.18
+
+%labels
+    Author Luc Elliott
+    Version 1.0
+    Description Lightweight container with Linux utilities (unzip, bash, wget)
+
+%environment
+    export PATH=/usr/local/bin:$PATH
+    export LANG=C.UTF-8
+
+%post
+    # Update Alpine package index
+    apk update
+
+    # Install essential Linux utilities
+    apk add --no-cache \
+        bash \
+        coreutils \
+        unzip \
+        wget \
+        curl \
+        ca-certificates \
+        gzip \
+        tar \
+        xz \
+        sed \
+        grep
+
+    
+%runscript
+    exec /bin/bash "$@"

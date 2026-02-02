@@ -160,7 +160,8 @@ def nextflow_check(session):
     session.run(
         "nextflow",
         "lint",
-        *[str(p) for p in PACKAGE_DIR_PATH.rglob("*.nf")] + [str(p) for p in PACKAGE_DIR_PATH.rglob("*.config")],
+        *[str(p) for p in PACKAGE_DIR_PATH.rglob("*.nf") if "external" not in p.parts]
+        + [str(p) for p in PACKAGE_DIR_PATH.rglob("*.config") if "external" not in p.parts],
         "-tabs",
         "-sort-declarations",
         "-harshil-alignment",
@@ -230,6 +231,33 @@ def pytest_loud(session):
 #
 # Packaging
 #
+
+
+@nox.session(python=PYTHON_VERSION)
+def build_singularity(session):
+    """
+    Build the Singularity containers for this project.
+    """
+    uv(session, "sync", "--group", "dev")
+    # use uv to turn pyproject.toml into requirements.txt
+    session.run("pip-compile", "--output-file", "requirements.txt", "pyproject.toml")
+    args = list(session.posargs)
+    if args:
+        singularity_images_dir = Path(args[0]).resolve()
+    else:
+        singularity_images_dir = Path("/mnt/sdd1/luc/singularity_images").resolve()
+
+    singularity_container_dir = Path("containers").resolve()
+
+    for definition_file in singularity_container_dir.rglob("*.def"):
+        print(f"Building Singularity image for {definition_file.name}...")
+        session.run(
+            "singularity",
+            "build",
+            str(singularity_images_dir.joinpath(definition_file.with_suffix(".sif").name)),
+            str(definition_file),
+            external=True,
+        )
 
 
 @nox.session(python=PYTHON_VERSION)

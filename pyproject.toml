@@ -7,6 +7,7 @@ requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "Luc Elliott", email = "luc1997@liverpool.ac.uk" }]
 dependencies = [
+  "biopython",
   "click",
   "typer",
 ]
@@ -52,6 +53,7 @@ exclude = [
   ".nox",
   "noxfile.py",
   "tests/*",
+  "FoldSeekStrucAnnoFlow/external/*",
 ]
 
 [tool.ruff]

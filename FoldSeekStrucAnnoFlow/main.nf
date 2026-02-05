@@ -29,7 +29,8 @@ include { extract_structures_from_zip } from './modules/extract_pdbs_from_zip.nf
 include { convert_cifs_to_pdb } from './modules/cif_to_pdb.nf'
 include { collect_pdb_symlinks } from './modules/pdb_symlinks.nf'
 include { chop_pdb_from_dir } from './modules/chop_pdbs.nf'
-include { foldseek_create_db } from './modules/foldseek_create_db.nf'
+include { run_foldseek } from './modules/run_foldseek.nf'
+include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 
 
 // ===============================================
@@ -71,8 +72,9 @@ include { collect_results_final } from './external/domain-annotation-pipeline/mo
 include { run_AF_domain_id } from './external/domain-annotation-pipeline/modules/run_create_AF_domain_id.nf'
 
 // Foldseek modules
-// Here I'll add my own FOLDSEEK modules with the right parameters 
-
+include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
+include { foldseek_run_convertalis } from './modules/run_foldseek_convertails.nf'
+include { foldseek_process_results } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_process_results.nf'
 // ===============================================
 // HELPER FUNCTIONS
 // ===============================================
@@ -110,11 +112,10 @@ def validateParameters() {
 
 
     // Foldseek-specific validation
-    // if (!params.parser_script || !file(params.parser_script).exists()) {
-        // error("Foldseek parser_script not found: ${params.parser_script}")
-    // }
+    if (!params.parser_script || !file(params.parser_script).exists()) {
+        error("Foldseek parser_script not found: ${params.parser_script}")
+    }
 
-    // This is cool, I like this alot but it'll get messy when expanding so might be able to have a python script to do this
     log.info(
         """
     ==============================================
@@ -130,13 +131,16 @@ def validateParameters() {
     Max entries (debug) : ${params.max_entries ?: 'N/A'}
     Results dir         : ${params.results_dir}
     Debug mode          : ${params.debug}
+    GPU usage         : ${params.USE_GPU}
     ----------------------------------------------
     Foldseek Configuration Information
     ----------------------------------------------
     Foldseek target Database Directory : ${params.foldseek_databases_dir}
-    
-    
-    
+    Foldseek E-value Threshold        : ${params.T_EVALUE_THRESHOLD}
+    Foldseek Coverage Threshold       : ${params.H_COVERAGE_THRESHOLD}
+    Foldseek Executable              : ${params.foldseek_exec}
+    Foldseek Database Names           : ${params.foldseek_db_names.join(', ')}
+
     ==============================================
     """.stripIndent()
     )
@@ -160,11 +164,10 @@ workflow {
     // Manual mode - specifies custom CATH database file locations
     // Usage: set --auto_fetch_foldseek_assets to false and --target_db /path/to/db --lookup_file /path/to/lookup
     
-    // Keeping this as it checks if a database exists. 
 
     // TODO: Look at where in the config file these are kept. I'll be using my own config file
     // ch_target_db = Channel.value(file(params.target_db))
-    // ch_lookup_file = Channel.value(file(params.lookup_file))
+    ch_lookup_file = channel.value(file(params.lookup_file))
 
     file("${params.results_dir}/consensus_chunks").mkdirs()
 
@@ -198,8 +201,6 @@ workflow {
     // Extract PDB and CIF files from zip based on chunked ids
     unfiltered_pdb_ch = extract_structures_from_zip(chunked_ids_ch, file(params.pdb_zip_file))
 
-
-    // extract all cif files from unfiltered_pdb_ch to be converted to pdb files
     cif_files_ch = unfiltered_pdb_ch
         .flatMap { tuple ->
             def id = tuple[0]
@@ -228,25 +229,18 @@ workflow {
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
     
-
-    // changing this to filter the pdbs and cifs together. Will convert them to cifs just after taking them out the zip
     filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
-    // From this point, I;m going to uncover the workflow bit by bit to ensure it works with PDB or CIF files directly
 
-
-//     // TODO: currently the rest of the workflow uses channel without chunk index
-//     //       we should feed, this through to all subsequent steps for better
-//     //       tracking / debugging / caching
     ids_ch = chunked_ids_ch.map { it -> it[1] }
     filtered_pdb_ch = filtered_pdb_ch.map { it -> it[1] }
 
-//     // =========================================
-//     // PHASE 2: Domain Prediction
-//     // =========================================
+    // =========================================
+    // PHASE 2: Domain Prediction
+    // =========================================
 
-//     // deterministic chunking: collect & sort, then chunk
-//     // required for caching, but waits for all PDBs first
+    // deterministic chunking: collect & sort, then chunk
+    // required for caching, but waits for all PDBs first
     heavy_chunk_ch = filtered_pdb_ch
         .flatten()
         .toSortedList { it.toString() }   // sort PDB paths deterministically
@@ -262,10 +256,7 @@ workflow {
             return chunks
         }
 
-
-
     segmentation_ch = run_ted_segmentation(heavy_chunk_ch)
-    // Multi-channel output cannot be applied to operator view for which argument is already provided
 
     // =========================================
     // PHASE 3: Results Collection & Filtering
@@ -307,17 +298,12 @@ workflow {
             }
         }
 
-
     chopped_pdb_ch = chop_pdb_from_dir(
         consensus_chunks_ch,
         heavy_chunk_ch
     )
 
-
-    // IT WORKED!!!! I've got all the hopeed pdbs without needed to change too much
-
-
-//     // Generate MD5 hashes for domains added a new file and script_ch
+    // Generate MD5 hashes for domains added a new file and script_ch
     md5_chunks_ch = create_md5(chopped_pdb_ch)
     collected_md5_ch = md5_chunks_ch
         .collectFile(
@@ -343,14 +329,9 @@ workflow {
         storeDir: params.results_dir,
         sort: { it -> it[0] } // sort by chunk id
     ) { it -> it[1] } // use file name to collect
-    
-
-    // Now breaks here
-    
+        
     // Run globularity analysis
     globularity_ch = run_measure_globularity(chopped_pdb_ch)
-    // globularity_ch.view { "globularity_ch: " + it }
-    // no flatten as only a single file per chunk
     collected_globularity_ch = globularity_ch.collectFile(
         name: "all_domain_globularity.tsv",
         keepHeader: true,
@@ -359,7 +340,8 @@ workflow {
         sort: { it -> it[0] } // sort by chunk id
     ) { it -> it[1] } // use file name to collect
 
-//     // chopped_pdb_ch.view { "chopped_pdb_ch: " + it }1
+
+    // Run domain quality analysis
     domain_quality_ch = run_domain_quality(chopped_pdb_ch)
 
     collected_domain_quality_ch = domain_quality_ch.collectFile(
@@ -372,8 +354,7 @@ workflow {
 
     // Run pLDDT analysis
     plddt_ch = run_plddt(chopped_pdb_ch)
-    // plddt_ch.view { "plddt_ch: " + it }
-    // no flatten as only a single file per chunk
+
     collected_plddt_ch = plddt_ch.collectFile(
         name: "all_plddt.tsv",
         storeDir: params.results_dir,
@@ -387,55 +368,63 @@ workflow {
     // PHASE 6: Run foldseek
     // =========================================
 
-    // Create the query DB from the chopped pdbs channel
 
-    // It doesn't even use the chopped pdb so I'm not
     foldseek_create_db(chopped_pdb_ch) 
-
-    // Define the target (CATH) database channel
-    // This needs to be changed to make is malleable for the local database location
-    ch_target_db = channel.fromPath(params.target_db)
-
+    ch_target_db = channel.fromPath(
+        params.foldseek_db_names.collect { db_name ->
+            "${params.foldseek_databases_dir}/${db_name}"
+        },
+        checkIfExists: true
+    )
+    ch_target_db.view {f -> "ch_target_db: " + f }
     
     // Run foldseek search on the output of process create_foldseek_db and the CATH database
-    // fs_search_ch = foldseek_run_foldseek(foldseek_create_db.out.query_db_dir, ch_target_db)
+    fs_search_ch = run_foldseek(
+        foldseek_create_db.out.query_db_dir, ch_target_db 
+    )
     
     // Convert results with fs convertalis, pass query_db, CATH_db and output db from run_foldseek
-    // fs_m8_ch = foldseek_run_convertalis(fs_search_ch, ch_target_db)
+    fs_m8_ch = foldseek_run_convertalis(fs_search_ch, ch_target_db)
+
+    fs_m8_ch.view { f -> "fs_m8_ch: " + f }
 
     // Parse output - first create a channel from the location of the python and look_up scripts
-    // ch_parser_script = Channel.value(file(params.parser_script))
-    //ch_parser_script = Channel.fromPath(params.parser_script, checkIfExists: true)
-    
+    ch_parser_script = channel.value(file(params.parser_script))
+
+
+    // I think this is the end of what I can do with this workflow and I need to take it from here
+
+    // ch_parser_script = channel.fromPath(params.parser_script, checkIfExists: true)    
     // Now pass the convertalis .m8 and python script as intputs to the parsing process
-    // fs_parsed_ch = foldseek_process_results(fs_m8_ch, ch_lookup_file, ch_parser_script)
-    
+    fs_parsed_ch = foldseek_process_results(fs_m8_ch, ch_lookup_file, ch_parser_script)
+
     // Finally combine results together with a similar collectFile statement as used above
-    // foldseek_ch = fs_parsed_ch.collectFile( 
-    //     name: 'foldseek_parsed_results.tsv',
-    //     keepHeader: true,
-    //     skip: 1,
-    //     storeDir: params.results_dir,
-    //     sort: { it -> it[0] }
-    // ) { it -> it[1] }
+    foldseek_ch = fs_parsed_ch.collectFile( 
+        name: 'foldseek_parsed_results.tsv',
+        keepHeader: true,
+        skip: 1,
+        storeDir: params.results_dir,
+        sort: { it -> it[0] }
+    ) { it -> it[1] }
 
     // create a dummy foldseek channel for now to allow workflow to run
-    foldseek_ch = Channel.empty()
-    // =========================================
-    // PHASE 7: Final Assembly
-    // =========================================
+    // foldseek_ch = Channel.empty()
+    // // =========================================
+    // // PHASE 7: Final Assembly
+    // // =========================================
 
-    // Transform consensus with structure data
+    // // Transform consensus with structure data
     transformed_consensus_ch = transform_consensus(
         collected_consensus_ch,
         collected_md5_ch,
         collected_stride_summaries_ch,
     )
 
-    // Generate AF domain IDs
-    // af_domain_ids_ch = run_AF_domain_id(transformed_consensus_ch)
+    // // Generate AF domain IDs
+    af_domain_ids_ch = run_AF_domain_id(transformed_consensus_ch)
 
-    // Collect intermediate results
+
+    // // Collect intermediate results
     intermediate_results_ch = collect_results(
         collected_chainsaw_ch,
         collected_merizo_ch,
@@ -445,12 +434,14 @@ workflow {
 
     // Generate final comprehensive results
     collect_results_script_ch = channel.fromPath(
-        "${workflow.projectDir}/../docker/script/combine_results_final.py", 
+        "${params.combine_script_path}", 
         checkIfExists: true
     )
     collect_results_script_ch.view { "collect_results_script_ch: " + it }
     
-    collected_taxonomy_ch = channel.empty() // Temporary empty channel as not downloading from UniProt
+    // create a dummy file 
+    collected_taxonomy_ch = dummy_taxonomy_file("all_taxonomy.tsv")
+
     final_results_ch = collect_results_final(
         collect_results_script_ch,
         transformed_consensus_ch,
@@ -461,30 +452,32 @@ workflow {
         foldseek_ch,
     )
 
-//     // =========================================
-//     // PHASE 8: Output Generation
-//     // =========================================
+    final_results_ch.view { f -> "final_results_ch: " + f }
 
-//     // Ensure final outputs are saved
-//     final_results_ch
-//         .map { file ->
-//             def output_path = "${params.results_dir}/final_domain_annotations.tsv"
-//             file.copyTo(output_path)
-//             log.info("Final results written to: ${output_path}")
-//             return output_path
-//         }
-//         .view { "Final output: ${it}" }
+    // =========================================
+    // PHASE 8: Output Generation
+    // =========================================
 
-//     // Create completion marker
-//     final_results_ch
-//         .map {
-//             def completion_file = file("${params.results_dir}/WORKFLOW_COMPLETED")
-//             completion_file.text = """
-//             Workflow completed successfully at: ${new Date()}
-//             Total processing time: ${workflow.duration}
-//             """.stripIndent()
-//             return "Workflow completed successfully"
-//         }
-//         .view()
+    // Ensure final outputs are saved
+    final_results_ch
+        .map { file ->
+            def output_path = "${params.results_dir}/final_domain_annotations.tsv"
+            file.copyTo(output_path)
+            log.info("Final results written to: ${output_path}")
+            return output_path
+        }
+        .view {f -> "Final output: ${f}" }
+// 
+    // Create completion marker
+    final_results_ch
+        .map {
+            def completion_file = file("${params.results_dir}/WORKFLOW_COMPLETED")
+            completion_file.text = """
+            Workflow completed successfully at: ${new Date()}
+            Total processing time: ${workflow.duration}
+            """.stripIndent()
+            return "Workflow completed successfully"
+        }
+        .view()
 }
 

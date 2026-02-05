@@ -19,7 +19,6 @@ dev = [
   "coverage",
   "isort",
   "mypy",
-  "nextflow",
   "pydantic",
   "pytest",
   "pytest-cov",

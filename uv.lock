@@ -288,7 +288,6 @@ dev = [
     { name = "coverage" },
     { name = "isort" },
     { name = "mypy" },
-    { name = "nextflow" },
     { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -312,7 +311,6 @@ dev = [
     { name = "coverage" },
     { name = "isort" },
     { name = "mypy" },
-    { name = "nextflow" },
     { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -500,12 +498,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
 ]
-
-[[package]]
-name = "nextflow"
-version = "25.10.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/60/d3/1806293bdcaec4b341141f7ceadf6bfaf73ea52e92a1e6b635f5828bf171/nextflow-25.10.3.tar.gz", hash = "sha256:4c1a0ff0807305a708806c72a5489cb3a9428b6626ce6a8ce56615de70943267", size = 7669, upload-time = "2026-01-23T04:39:13.346Z" }
 
 [[package]]
 name = "numpy"

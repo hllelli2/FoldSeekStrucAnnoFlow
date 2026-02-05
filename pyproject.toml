@@ -1,13 +1,15 @@
 [project]
-name = "placeholder_project_name"
+name = "FoldSeekStrucAnnoFlow"
 version = "0.0.1"
-description = "Your project description here"
+description = "The configuration file for any python scripts used in the FoldSeek structural annotation Nextflow pipeline."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+license = "MIT"
+authors = [{ name = "Luc Elliott", email = "luc1997@liverpool.ac.uk" }]
 dependencies = [
-  # dependencies go here
+  "biopython",
+  "click",
+  "typer",
 ]
 
 [dependency-groups]
@@ -17,7 +19,7 @@ dev = [
   "coverage",
   "isort",
   "mypy",
-  "pydantic[mypy]",
+  "pydantic",
   "pytest",
   "pytest-cov",
   "pytest-pretty",
@@ -51,6 +53,7 @@ exclude = [
   ".nox",
   "noxfile.py",
   "tests/*",
+  "FoldSeekStrucAnnoFlow/external/*",
 ]
 
 [tool.ruff]
@@ -61,5 +64,6 @@ exclude = [
   # add other files or directories to exclude from linting here
 ]
 
-[tool.uv]
-exclude-newer = "1 week"
+[tool.setuptools.packages.find]
+include = ["foldseekstrucannoflow*"]
+exclude = ["works/*"]

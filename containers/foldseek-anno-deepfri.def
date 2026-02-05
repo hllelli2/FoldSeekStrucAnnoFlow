@@ -1,0 +1,43 @@
+Bootstrap: docker
+From: python:3.7-slim-bullseye
+
+
+%labels
+    Author Luc Elliott
+    Version v1.0
+    Description DeepFRI Singularity container
+
+%help
+    This container runs DeepFRI (Python 3.7 + TensorFlow + Biopython + scikit-learn).
+    See: https://github.com/flatironinstitute/DeepFRI :contentReference[oaicite:1]{index=1}
+
+%environment
+    export PYTHONUNBUFFERED=1
+
+    export PATH="/opt/deepfri/bin:${PATH}"
+    export PYTHONPATH="/opt/deepfri:${PYTHONPATH}"
+
+%post
+    echo "=== Updating apt and installing OS deps ==="
+    apt-get update && apt-get install -y --no-install-recommends \
+        git build-essential \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    echo "=== Installing DeepFRI and Python deps ==="
+    python3 -m pip install --upgrade pip setuptools
+
+    git clone https://github.com/flatironinstitute/DeepFRI.git /opt/deepfri
+
+    cd /opt/deepfri
+
+    pip install .
+
+    pip cache purge
+
+%runscript
+    echo "DeepFRI container"
+    exec python3 "$@"
+
+%labels
+    DeepFRI "Deep Functional Residue Identification"

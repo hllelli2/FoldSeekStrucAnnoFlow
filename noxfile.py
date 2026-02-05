@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import shutil
 
 import nox
 
@@ -25,9 +26,10 @@ def get_package_name():
 
 PYTHON_VERSION = get_python_version()
 PACKAGE_NAME = get_package_name()
+PACKAGE_DIR_PATH = Path(PACKAGE_NAME).resolve()
 
-# Default: reuse uv-managed virtualenvs for speed
 nox.options.reuse_existing_virtualenvs = True
+nox.options.default_venv_backend = "uv"
 
 
 def uv(session, *args):
@@ -85,7 +87,8 @@ def tomlsort_fixes(session):
     session.run(
         "tombi",
         "format",
-        *Path(".").rglob("*.toml"),
+        # Only format toml files that are not in .venv directories
+        *[str(p) for p in Path(".").rglob("*.toml") if ".venv" not in p.parts and ".nox" not in p.parts],
         external=True,
     )
 
@@ -104,6 +107,23 @@ def chores(session):
 
     This runs all formatting and linting fixes but also mypy checks.
     """
+    session.notify("isort_fixes")
+    session.notify("ruff_fixes")
+    session.notify("black_fixes")
+    session.notify("tomlsort_fixes")
+    session.notify("mypy_check")
+    session.notify("nextflow_check")
+
+
+@nox.session(python=PYTHON_VERSION)
+def github_actions_chores(session):
+    """
+    Same as chores but with more verbose pytest output for better debugging in CI.
+
+    and no cloud nextflow check as this repo relies on non-downloaded modules.
+
+    """
+
     session.notify("isort_fixes")
     session.notify("ruff_fixes")
     session.notify("black_fixes")
@@ -137,7 +157,7 @@ def mypy_check(session):
 @nox.session(python=PYTHON_VERSION)
 def tomlsort_check(session):
     uv(session, "sync", "--group", "dev")
-    tomls = [str(p) for p in Path(".").rglob("*.toml") if ".venv" not in p.parts]
+    tomls = [str(p) for p in Path(".").rglob("*.toml") if ".venv" not in p.parts and ".nox" not in p.parts]
     session.run("tombi", "lint", *tomls, external=True)
     session.run("tombi", "format", *tomls, "--check", external=True)
 
@@ -146,6 +166,23 @@ def tomlsort_check(session):
 def isort_check(session):
     uv(session, "sync", "--group", "dev")
     session.run("isort", PACKAGE_NAME, "tests", "--check-only")
+
+
+@nox.session(python=PYTHON_VERSION)
+def nextflow_check(session):
+    """
+    Lint Nextflow files using built in Nextflow linting.
+    """
+    session.run(
+        "nextflow",
+        "lint",
+        *[str(p) for p in PACKAGE_DIR_PATH.rglob("*.nf") if "external" not in p.parts]
+        + [str(p) for p in PACKAGE_DIR_PATH.rglob("*.config") if "external" not in p.parts],
+        "-tabs",
+        "-sort-declarations",
+        "-harshil-alignment",
+        external=True,
+    )
 
 
 #
@@ -165,7 +202,39 @@ def tests(session):
     session.notify("mypy_check")
     session.notify("tomlsort_check")
     session.notify("isort_check")
+    session.notify("nextflow_check")
     session.notify("pytest")
+
+
+@nox.session(python=PYTHON_VERSION)
+def github_actions_tests(session):
+    """
+    Same as tests but with more verbose pytest output for better debugging in CI.
+
+    and no cloud nextflow check as this repo relies on non-downloaded modules.
+
+    """
+
+    session.notify("ruff_check")
+    session.notify("black_check")
+    session.notify("mypy_check")
+    session.notify("tomlsort_check")
+    session.notify("isort_check")
+    session.notify("pytest_loud")
+
+
+@nox.session(python=PYTHON_VERSION)
+def precommit(session):
+    """
+    Equivalent of:
+      make precommit
+    """
+
+    session.notify("ruff_check")
+    session.notify("black_check")
+    session.notify("mypy_check")
+    session.notify("tomlsort_check")
+    session.notify("isort_check")
 
 
 @nox.session(python=PYTHON_VERSION)
@@ -198,6 +267,33 @@ def pytest_loud(session):
 
 
 @nox.session(python=PYTHON_VERSION)
+def build_singularity(session):
+    """
+    Build the Singularity containers for this project.
+    """
+    uv(session, "sync", "--group", "dev")
+    # use uv to turn pyproject.toml into requirements.txt
+    session.run("pip-compile", "--output-file", "requirements.txt", "pyproject.toml")
+    args = list(session.posargs)
+    if args:
+        singularity_images_dir = Path(args[0]).resolve()
+    else:
+        singularity_images_dir = Path("/mnt/sdd1/luc/singularity_images").resolve()
+
+    singularity_container_dir = Path("containers").resolve()
+
+    for definition_file in singularity_container_dir.rglob("*.def"):
+        print(f"Building Singularity image for {definition_file.name}...")
+        session.run(
+            "singularity",
+            "build",
+            str(singularity_images_dir.joinpath(definition_file.with_suffix(".sif").name)),
+            str(definition_file),
+            external=True,
+        )
+
+
+@nox.session(python=PYTHON_VERSION)
 def build(session):
     """
     Equivalent of:
@@ -205,3 +301,63 @@ def build(session):
     """
     uv(session, "sync", "--group", "dev")
     session.run("python", "-m", "build")
+
+
+#
+# Nextflow
+#
+
+
+@nox.session()
+def nextflow(session):
+    """
+    Run Nextflow pipeline with a specified profile (default: local).
+    Usage:
+      nox -s nextflow -- [profile] [nextflow args...]
+      e.g. nox -s nextflow -- slurm --input_dir /path/to/inputs
+    """
+    args = list(session.posargs)
+    profile = "local"
+    if args and args[0] in {"local", "slurm"}:
+        profile = args.pop(0)
+    if "--input_dir" not in args:
+        args.extend(["--input_dir", str(PACKAGE_DIR_PATH.joinpath("..", "inputs", "test"))])
+
+    session.run(
+        "nextflow",
+        "run",
+        PACKAGE_DIR_PATH.joinpath("main.nf"),
+        "--profile",
+        profile,
+        *args,
+        external=True,
+        env={
+            "NXF_LOG_FILE": str(PACKAGE_DIR_PATH.joinpath("work", ".nextflow.log")),
+            **os.environ,
+        },
+    )
+
+
+@nox.session()
+def nextflow_clean(session):
+    """
+    Clean all Nextflow work directories for this project.
+    """
+
+    session.run(
+        "nextflow",
+        "clean",
+        "-f",
+        external=True,
+    )
+
+
+@nox.session()
+def nextflow_obliterate(session):
+    """
+    Obliterate all Nextflow work directories for this project.
+    WARNING: This will delete all work directories and cannot be undone.
+    """
+    session.chdir(PACKAGE_DIR_PATH)
+
+    shutil.rmtree(PACKAGE_DIR_PATH.joinpath("work"), ignore_errors=True)

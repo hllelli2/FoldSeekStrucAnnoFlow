@@ -15,3 +15,21 @@ __pycache__/
 # Distribution / packaging
 *egg-info/
 
+# Nextflow
+.work/
+.nextflow/
+.nextflow.log
+work/
+dag*
+*.dot
+
+# production / build files
+inputs/
+results/
+requirements.txt
+
+
+
+# External
+
+external/

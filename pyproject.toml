@@ -1,7 +1,7 @@
 [project]
 name = "FoldSeekStrucAnnoFlow"
 version = "0.0.1"
-description = "Your project description here"
+description = "The configuration file for any python scripts used in the FoldSeek structural annotation Nextflow pipeline."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

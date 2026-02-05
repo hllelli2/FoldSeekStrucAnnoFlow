@@ -115,6 +115,22 @@ def chores(session):
     session.notify("nextflow_check")
 
 
+@nox.session(python=PYTHON_VERSION)
+def github_actions_chores(session):
+    """
+    Same as chores but with more verbose pytest output for better debugging in CI.
+
+    and no cloud nextflow check as this repo relies on non-downloaded modules.
+
+    """
+
+    session.notify("isort_fixes")
+    session.notify("ruff_fixes")
+    session.notify("black_fixes")
+    session.notify("tomlsort_fixes")
+    session.notify("mypy_check")
+
+
 #
 # Checks / linting
 #
@@ -188,6 +204,23 @@ def tests(session):
     session.notify("isort_check")
     session.notify("nextflow_check")
     session.notify("pytest")
+
+
+@nox.session(python=PYTHON_VERSION)
+def github_actions_tests(session):
+    """
+    Same as tests but with more verbose pytest output for better debugging in CI.
+
+    and no cloud nextflow check as this repo relies on non-downloaded modules.
+
+    """
+
+    session.notify("ruff_check")
+    session.notify("black_check")
+    session.notify("mypy_check")
+    session.notify("tomlsort_check")
+    session.notify("isort_check")
+    session.notify("pytest_loud")
 
 
 @nox.session(python=PYTHON_VERSION)

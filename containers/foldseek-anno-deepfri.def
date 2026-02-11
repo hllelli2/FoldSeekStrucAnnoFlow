@@ -1,43 +1,49 @@
 Bootstrap: docker
 From: python:3.7-slim-bullseye
 
-
 %labels
     Author Luc Elliott
     Version v1.0
-    Description DeepFRI Singularity container
+    Description DeepFRI Singularity container, no apt‑get
 
 %help
-    This container runs DeepFRI (Python 3.7 + TensorFlow + Biopython + scikit-learn).
-    See: https://github.com/flatironinstitute/DeepFRI :contentReference[oaicite:1]{index=1}
+    This container runs DeepFRI (Python 3.7 + TensorFlow + Biopython + scikit‑learn). 
+    DeepFRI dependencies are installed via pip only. :contentReference[oaicite:2]{index=2}
 
 %environment
     export PYTHONUNBUFFERED=1
-
-    export PATH="/opt/deepfri/bin:${PATH}"
-    export PYTHONPATH="/opt/deepfri:${PYTHONPATH}"
+    export PATH="/opt/deepfri/DeepFRI-master:${PATH}"
+    export PYTHONPATH="/opt/deepfri/DeepFRI-master:${PYTHONPATH}"
 
 %post
-    echo "=== Updating apt and installing OS deps ==="
-    apt-get update && apt-get install -y --no-install-recommends \
-        git build-essential \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/*
+    echo "=== Setting up Python environment without apt‑get ==="
 
-    echo "=== Installing DeepFRI and Python deps ==="
-    python3 -m pip install --upgrade pip setuptools
+    
 
-    git clone https://github.com/flatironinstitute/DeepFRI.git /opt/deepfri
+    # Ensure pip is up‑to‑date
+    python3 -m pip install --upgrade pip
 
-    cd /opt/deepfri
+    python3 -m pip install wget 
 
+
+    # Create a directory for DeepFRI
+    mkdir -p /opt/deepfri
+
+
+# Download DeepFRI source as zip
+    python3 -c "import wget; wget.download('https://github.com/flatironinstitute/DeepFRI/archive/refs/heads/master.zip', '/tmp/deepfri.zip')"
+
+    # Unzip the downloaded file
+    python3 -c "import zipfile; zipfile.ZipFile('/tmp/deepfri.zip', 'r').extractall('/opt/deepfri')"
+
+    # change to the DeepFRI directory
+    cd /opt/deepfri/DeepFRI-master
+    # Install DeepFRI and its dependencies
     pip install .
 
-    pip cache purge
+
+    python3 -m pip cache purge
 
 %runscript
     echo "DeepFRI container"
     exec python3 "$@"
-
-%labels
-    DeepFRI "Deep Functional Residue Identification"

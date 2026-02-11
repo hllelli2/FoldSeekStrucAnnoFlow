@@ -272,6 +272,11 @@ def build_singularity(session):
     Build the Singularity containers for this project.
     """
     uv(session, "sync", "--group", "dev")
+    session.install("pip==24.0", "pip-tools==7.5.2")
+    session.run("pip", "--version")
+    session.run("pip-compile", "--version")
+
+    # existing commands below…
     # use uv to turn pyproject.toml into requirements.txt
     session.run("pip-compile", "--output-file", "requirements.txt", "pyproject.toml")
     args = list(session.posargs)
@@ -279,19 +284,23 @@ def build_singularity(session):
         singularity_images_dir = Path(args[0]).resolve()
     else:
         singularity_images_dir = Path("/mnt/sdd1/luc/singularity_images").resolve()
-
+    print("Singularity_dir:", singularity_images_dir)
     singularity_container_dir = Path("containers").resolve()
 
     for definition_file in singularity_container_dir.rglob("*.def"):
         print(f"Building Singularity image for {definition_file.name}...")
-        session.run(
-            "singularity",
-            "build",
-            str(singularity_images_dir.joinpath(definition_file.with_suffix(".sif").name)),
-            str(definition_file),
-            external=True,
-        )
-
+        try:
+            session.run(
+                "singularity",
+                "build",
+                str(singularity_images_dir.joinpath(definition_file.with_suffix(".sif").name)),
+                str(definition_file),
+                external=True,
+            )
+        # Offers to rebuild, if user says no, it will skip to the next one instead of erroring out.
+        except Exception as e:
+            print(f"Error building {definition_file.name}: {e}")
+            continue
 
 @nox.session(python=PYTHON_VERSION)
 def build(session):
@@ -318,17 +327,15 @@ def nextflow(session):
     """
     args = list(session.posargs)
     profile = "local"
-    if args and args[0] in {"local", "slurm"}:
-        profile = args.pop(0)
-    if "--input_dir" not in args:
+    if args and "--profile" not in args:
+        args.extend(["--profile", profile])
+    if args and "--input_dir" not in args:
         args.extend(["--input_dir", str(PACKAGE_DIR_PATH.joinpath("..", "inputs", "test"))])
 
     session.run(
         "nextflow",
         "run",
         PACKAGE_DIR_PATH.joinpath("main.nf"),
-        "--profile",
-        profile,
         *args,
         external=True,
         env={

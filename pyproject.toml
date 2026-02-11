@@ -26,10 +26,11 @@ dev = [
   "ruff",
   "tombi",
   "uv",
+  "pip-tools>=7",
 ]
 
 [build-system]
-requires = ["setuptools>=65.5.0", "wheel"]
+requires = ["setuptools>=65.5.0", "wheel", "pip<25",]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage.run]

@@ -1,81 +1,42 @@
 Bootstrap: docker
-From: debian:bookworm-slim
+From: python:3.7-slim-bullseye 
 
 %labels
     App foldseek
     Source https://github.com/steineggerlab/foldseek
 
-%arguments
-    GPU=0
-    VERSION=master
-
 %environment
-    export PATH=/root/.cargo/bin:/usr/local/bin:$PATH
+    export PATH=/opt/foldseek/foldseek/bin:$PATH
 
 %post
     set -eux
+    python3 -m pip install --upgrade pip
 
-    APP=foldseek
-    GPU="${GPU:-0}"
-    VERSION="${VERSION:-master}"
+    python3 -m pip install wget 
 
-    # Detect arch
-    ARCH=$(uname -m)
-    if [ "$ARCH" = "aarch64" ]; then
-        TARGETARCH=arm64
-        RUST_ARCH=aarch64
-    else
-        TARGETARCH=amd64
-        RUST_ARCH=x86_64
-    fi
 
-    # Base deps
-    dpkg --add-architecture $TARGETARCH
-    apt-get update
-    apt-get install -y \
-        build-essential cmake git curl \
-        zlib1g-dev libbz2-dev libatomic1 \
-        crossbuild-essential-$TARGETARCH \
-        zlib1g-dev:$TARGETARCH libbz2-dev:$TARGETARCH \
-        gawk bash grep wget tar aria2
-
-    # Optional GPU
-    if [ "$GPU" = "1" ]; then
-        curl -O https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
-        dpkg -i cuda-keyring_1.1-1_all.deb
-        apt-get update
-        apt-get install -y \
-            cuda-nvcc-12-6 cuda-cudart-dev-12-6 libcublas-dev-12-6 ninja-build
-    fi
-
-    rm -rf /var/lib/apt/lists/*
-
-    # Rust
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
-        sh -s -- --profile minimal --default-host ${RUST_ARCH}-unknown-linux-gnu -y
-
-    # Get foldseek
-    git clone https://github.com/steineggerlab/foldseek.git /opt/foldseek
+    # Make foldseek dir
+    mkdir -p /opt/foldseek
     cd /opt/foldseek
 
-    if [ "$VERSION" != "master" ]; then
-        git checkout "$VERSION"
-    fi
+    # Download precompiled binary
+    # You can change VERSION to a release tag or "latest"
+    VERSION="10-941cd33"
+    BINARY_URL="https://github.com/steineggerlab/foldseek/releases/download/$VERSION/foldseek-linux-gpu.tar.gz"
 
-    # Build
-    if [ "$TARGETARCH" = "arm64" ]; then
-        mkdir build && cd build
-        CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ \
-          cmake -DHAVE_ARM8=1 -DHAVE_MPI=0 -DHAVE_TESTS=0 \
-                -DCMAKE_BUILD_TYPE=Release ..
-        make -j$(nproc)
-        mv src/foldseek /usr/local/bin/foldseek
+    # Fetch binary without apt or git
+    python3 -c "import wget; wget.download('${BINARY_URL}', 'foldseek.tar.gz')"
 
-    else
-        mkdir build && cd build
-        cmake -DHAVE_AVX2=1 -DHAVE_MPI=0 -DHAVE_TESTS=0 \
-              -DCMAKE_BUILD_TYPE=Release ..
-        make -j$(nproc)
-        mv src/foldseek /usr/local/bin/foldseek
-    fi
+    tar -xzf foldseek.tar.gz
+    rm foldseek.tar.gz
 
+    # Ensure binary is executable
+    chmod +x foldseek
+
+%runscript
+    exec foldseek "$@"
+
+%help
+    FoldSeek container, CPU/GPU ready.
+    Binaries are precompiled — no compilation, no apt-get, no git required.
+    Use GPU if host has CUDA installed.

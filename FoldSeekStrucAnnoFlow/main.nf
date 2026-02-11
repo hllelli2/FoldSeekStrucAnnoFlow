@@ -195,9 +195,10 @@ workflow {
         .toList()
         .flatMap { List chunk_files ->
             // Emit a tuple (id, path) where id is the chunk index and path is the chunk file
-            chunk_files.withIndex().collect { cf, idx ->
-                [ idx, cf ]
-            }
+            chunk_files.findAll { cf -> cf.size() > 0 }
+                  .withIndex()
+                  .collect { cf, idx -> [ idx, cf ] }
+            
         }
 
     // Extract PDB and CIF files from zip based on chunked ids

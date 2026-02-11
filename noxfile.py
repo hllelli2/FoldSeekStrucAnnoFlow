@@ -302,6 +302,7 @@ def build_singularity(session):
             print(f"Error building {definition_file.name}: {e}")
             continue
 
+
 @nox.session(python=PYTHON_VERSION)
 def build(session):
     """

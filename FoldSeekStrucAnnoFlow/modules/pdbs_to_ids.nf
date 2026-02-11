@@ -1,4 +1,5 @@
 #!/usr/bin/env nextflow
+
 nextflow.enable.dsl=2
 
 process input_structure_zip_to_ids {
@@ -9,16 +10,13 @@ process input_structure_zip_to_ids {
     output:
     path ids_output
  
+ 
     script:
     ids_output = "ids.txt"
     """
-    unzip -Z1 "${zip_file}" \
-      | sed 's|.*/||' \
-      | sed "s/\\.[^.]*\$//" \
-      | grep -v '^\$' \
-      > ids.txt
-        """
-
+    ${params.zip_to_ids_script} ${zip_file} ${ids_output}
+ 
+    """ 
 // TODO: add a stub
 stub:
 """

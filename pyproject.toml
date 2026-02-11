@@ -19,6 +19,7 @@ dev = [
   "coverage",
   "isort",
   "mypy",
+  "pip-tools>=7",
   "pydantic",
   "pytest",
   "pytest-cov",
@@ -26,11 +27,14 @@ dev = [
   "ruff",
   "tombi",
   "uv",
-  "pip-tools>=7",
 ]
 
 [build-system]
-requires = ["setuptools>=65.5.0", "wheel", "pip<25",]
+requires = [
+  "pip<25",
+  "setuptools>=65.5.0",
+  "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage.run]

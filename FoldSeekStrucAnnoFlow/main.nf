@@ -178,6 +178,8 @@ workflow {
 
     all_model_ids = input_structure_zip_to_ids(file(params.pdb_zip_file))
     
+    all_model_ids.view { f -> "All model IDs: " + f }
+    
 
      // Apply debug limit if enabled
     if (params.debug && params.max_entries) {
@@ -199,6 +201,8 @@ workflow {
         }
 
     // Extract PDB and CIF files from zip based on chunked ids
+
+    chunked_ids_ch.view { f -> "Chunked IDs: " + f }
     unfiltered_pdb_ch = extract_structures_from_zip(chunked_ids_ch, file(params.pdb_zip_file))
 
     cif_files_ch = unfiltered_pdb_ch

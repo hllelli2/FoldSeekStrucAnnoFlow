@@ -181,8 +181,6 @@ workflow {
 
     all_model_ids = input_structure_zip_to_ids(file(params.pdb_zip_file))
     
-    all_model_ids.view { f -> "All model IDs: " + f }
-    
 
      // Apply debug limit if enabled
     if (params.debug && params.max_entries) {

@@ -52,6 +52,7 @@ include { convert_unidoc_results } from './external/domain-annotation-pipeline/m
 include { run_get_consensus } from './external/domain-annotation-pipeline/modules/run_get_consensus.nf'
 include { run_filter_consensus } from './external/domain-annotation-pipeline/modules/run_filter_consensus.nf'
 
+
 // Post-processing modules
 include { chop_pdb } from './external/domain-annotation-pipeline/modules/chop_pdb.nf'
 include { chop_pdb_from_zip } from './external/domain-annotation-pipeline/modules/chop_pdb_from_zip.nf'
@@ -59,6 +60,8 @@ include { create_md5 } from './external/domain-annotation-pipeline/modules/creat
 include { run_stride } from './external/domain-annotation-pipeline/modules/run_stride.nf'
 include { summarise_stride } from './external/domain-annotation-pipeline/modules/summarise_stride.nf'
 include { transform_consensus } from './external/domain-annotation-pipeline/modules/transform.nf'
+
+// include { chop_pdb } from './external/domain-annotation-pipeline/modules/chop_pdb.nf'
 
 // Analysis modules
 include { run_domain_quality } from './external/domain-annotation-pipeline/modules/run_domain_quality.nf'
@@ -186,6 +189,7 @@ workflow {
         all_model_ids = all_model_ids.take(params.max_entries)
     }
 
+    
     chunked_ids_ch = all_model_ids.collectFile(
             name: 'all_model_ids.txt',
             newLine: true,
@@ -195,15 +199,15 @@ workflow {
         .toList()
         .flatMap { List chunk_files ->
             // Emit a tuple (id, path) where id is the chunk index and path is the chunk file
-            chunk_files.findAll { cf -> cf.size() > 0 }
+            chunk_files.findAll { cf -> cf.text.readLines().any { it.trim() } }
                   .withIndex()
                   .collect { cf, idx -> [ idx, cf ] }
             
+        
         }
 
     // Extract PDB and CIF files from zip based on chunked ids
 
-    chunked_ids_ch.view { f -> "Chunked IDs: " + f }
     unfiltered_pdb_ch = extract_structures_from_zip(chunked_ids_ch, file(params.pdb_zip_file))
 
     cif_files_ch = unfiltered_pdb_ch
@@ -225,17 +229,15 @@ workflow {
         }
 
     
-    converted_pdb_ch = convert_cifs_to_pdb(cif_files_ch
-        .map { id, cif_file -> 
-            [ id, cif_file ] 
-        }
-        .groupTuple()
-    )
+    converted_pdb_ch = convert_cifs_to_pdb(
+    cif_files_ch.map { id, cif_file -> [id, cif_file] }
+)
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
-    
-    filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
+
+
+    filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
     ids_ch = chunked_ids_ch.map { it -> it[1] }
     filtered_pdb_ch = filtered_pdb_ch.map { it -> it[1] }
@@ -301,12 +303,30 @@ workflow {
             chunk_files.withIndex().collect { cf, idx ->
                 [ idx, cf ]
             }
-        }
+        }  
 
+   
+    
+    all_pdb_ch = heavy_chunk_ch.flatten().collect()
+
+
+    ch_grouped_pdbs = consensus_chunks_ch.map { chunk_id, chunk_file ->
+    // Extract IDs from the chunk file
+    def ids = chunk_file.text.readLines().collect { line -> line.split('\t')[0] }
+    // Subset the global PDB list (all_pdb_ch must be a value channel)
+    def matched_pdbs = all_pdb_ch.get().findAll { pdb_path ->
+        ids.contains(pdb_path.getBaseName().replaceFirst(/\.pdb$/, ''))
+    }
+    [chunk_id, matched_pdbs]
+}
+
+
+    
     chopped_pdb_ch = chop_pdb_from_dir(
+        ch_grouped_pdbs, 
         consensus_chunks_ch,
-        heavy_chunk_ch
-    )
+        )
+
 
     // Generate MD5 hashes for domains added a new file and script_ch
     md5_chunks_ch = create_md5(chopped_pdb_ch)

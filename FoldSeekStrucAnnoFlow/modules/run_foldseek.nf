@@ -7,8 +7,8 @@ process run_foldseek {
     publishDir "results", mode: 'copy'
 
     input:
-    tuple val(id), path(query_db_dir)
-    path(target_db)
+    tuple val(id), path(query_db_dir), path(target_db)
+    // path(target_db)
 
 
     output:

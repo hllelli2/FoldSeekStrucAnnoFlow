@@ -9,8 +9,7 @@ process foldseek_run_convertalis {
     publishDir "results/convertalis", mode: 'copy'
     
     input:
-    tuple val(id), path(query_db_dir), path(result_db_dir)
-    path(target_db)
+    tuple val(id), path(query_db_dir), path(result_db_dir), path(target_db)
 
     output:
     tuple val(id), path("foldseek_output.m8"), emit: m8_output

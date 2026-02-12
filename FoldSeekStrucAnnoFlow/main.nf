@@ -392,22 +392,30 @@ workflow {
     // =========================================
 
 
-    foldseek_create_db(chopped_pdb_ch) 
+
+    foldseek_db_ch = foldseek_create_db(chopped_pdb_ch)
+
+
+    // Prepare target DB channel
     ch_target_db = channel.fromPath(
         params.foldseek_db_names.collect { db_name ->
             "${params.foldseek_databases_dir}/${db_name}"
         },
         checkIfExists: true
     )
-    ch_target_db.view {f -> "ch_target_db: " + f }
-    
-    // Run foldseek search on the output of process create_foldseek_db and the CATH database
-    fs_search_ch = run_foldseek(
-        foldseek_create_db.out.query_db_dir, ch_target_db 
+
+
+    query_db_target_db_ch = foldseek_db_ch.combine(
+        ch_target_db
     )
+
+
     
-    // Convert results with fs convertalis, pass query_db, CATH_db and output db from run_foldseek
-    fs_m8_ch = foldseek_run_convertalis(fs_search_ch, ch_target_db)
+    fs_search_ch = run_foldseek(
+     query_db_target_db_ch
+    ) 
+    
+    fs_m8_ch = foldseek_run_convertalis(fs_search_ch.combine(ch_target_db))
 
     fs_m8_ch.view { f -> "fs_m8_ch: " + f }
 
@@ -415,11 +423,10 @@ workflow {
     ch_parser_script = channel.value(file(params.parser_script))
 
 
-    // I think this is the end of what I can do with this workflow and I need to take it from here
 
-    // ch_parser_script = channel.fromPath(params.parser_script, checkIfExists: true)    
-    // Now pass the convertalis .m8 and python script as intputs to the parsing process
     fs_parsed_ch = foldseek_process_results(fs_m8_ch, ch_lookup_file, ch_parser_script)
+
+
 
     // Finally combine results together with a similar collectFile statement as used above
     foldseek_ch = fs_parsed_ch.collectFile( 
@@ -430,8 +437,7 @@ workflow {
         sort: { it -> it[0] }
     ) { it -> it[1] }
 
-    // create a dummy foldseek channel for now to allow workflow to run
-    // foldseek_ch = Channel.empty()
+
     // // =========================================
     // // PHASE 7: Final Assembly
     // // =========================================
@@ -442,6 +448,8 @@ workflow {
         collected_md5_ch,
         collected_stride_summaries_ch,
     )
+
+    transformed_consensus_ch.view { f -> "transformed_consensus_ch: " + f }
 
     // // Generate AF domain IDs
     af_domain_ids_ch = run_AF_domain_id(transformed_consensus_ch)

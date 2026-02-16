@@ -30,6 +30,7 @@ include { convert_cifs_to_pdb } from './modules/cif_to_pdb.nf'
 include { collect_pdb_symlinks } from './modules/pdb_symlinks.nf'
 include { chop_pdb_from_dir } from './modules/chop_pdbs.nf'
 include { run_foldseek } from './modules/run_foldseek.nf'
+include { foldseek_create_db } from './modules/create_db.nf'
 include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 
 
@@ -75,7 +76,7 @@ include { collect_results_final } from './external/domain-annotation-pipeline/mo
 include { run_AF_domain_id } from './external/domain-annotation-pipeline/modules/run_create_AF_domain_id.nf'
 
 // Foldseek modules
-include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
+// include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
 include { foldseek_run_convertalis } from './modules/run_foldseek_convertails.nf'
 include { foldseek_process_results } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_process_results.nf'
 // ===============================================

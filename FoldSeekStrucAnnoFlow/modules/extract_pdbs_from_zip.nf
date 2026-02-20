@@ -14,23 +14,19 @@ process extract_structures_from_zip {
     tuple val(id), path("*.{pdb,cif,mmcif}")
 
     script:
+    
     """
-    internal_dir=\$(unzip -Z1 "${pdb_zip}" | head -n1 | sed 's|/.*||' | tr -d '\n')
-
-    # Check if internal_dir is actually a directory inside the zip
-    if unzip -Z1 "${pdb_zip}" | grep -q "^\${internal_dir}/"; then
-        prefix="\${internal_dir}/"
-    else
-        prefix=""
-    fi
-
-    while read -r line; do
-        [[ -z "\${line// }" ]] && continue
-
-        echo "Extracting structure for ID: \${line}"
-        unzip -j "${pdb_zip}" "\${prefix}\${line}.*" || true
-
-
-    done < ${id_file}
+    ${params.extract_structure_script} ${pdb_zip} ${id_file} 
     """
-}
+
+    stub:
+    """
+    echo "Stub for extract_structures_from_zip with ID: ${id}"
+    touch ${id}_structure.pdb
+    touch ${id}_structure.cif
+    touch ${id}_structure.mmcif
+    """
+    }
+
+
+

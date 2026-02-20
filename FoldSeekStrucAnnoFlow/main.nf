@@ -30,6 +30,7 @@ include { convert_cifs_to_pdb } from './modules/cif_to_pdb.nf'
 include { collect_pdb_symlinks } from './modules/pdb_symlinks.nf'
 include { chop_pdb_from_dir } from './modules/chop_pdbs.nf'
 include { run_foldseek } from './modules/run_foldseek.nf'
+include { foldseek_create_db } from './modules/create_db.nf'
 include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 
 
@@ -52,6 +53,7 @@ include { convert_unidoc_results } from './external/domain-annotation-pipeline/m
 include { run_get_consensus } from './external/domain-annotation-pipeline/modules/run_get_consensus.nf'
 include { run_filter_consensus } from './external/domain-annotation-pipeline/modules/run_filter_consensus.nf'
 
+
 // Post-processing modules
 include { chop_pdb } from './external/domain-annotation-pipeline/modules/chop_pdb.nf'
 include { chop_pdb_from_zip } from './external/domain-annotation-pipeline/modules/chop_pdb_from_zip.nf'
@@ -59,6 +61,8 @@ include { create_md5 } from './external/domain-annotation-pipeline/modules/creat
 include { run_stride } from './external/domain-annotation-pipeline/modules/run_stride.nf'
 include { summarise_stride } from './external/domain-annotation-pipeline/modules/summarise_stride.nf'
 include { transform_consensus } from './external/domain-annotation-pipeline/modules/transform.nf'
+
+// include { chop_pdb } from './external/domain-annotation-pipeline/modules/chop_pdb.nf'
 
 // Analysis modules
 include { run_domain_quality } from './external/domain-annotation-pipeline/modules/run_domain_quality.nf'
@@ -72,7 +76,7 @@ include { collect_results_final } from './external/domain-annotation-pipeline/mo
 include { run_AF_domain_id } from './external/domain-annotation-pipeline/modules/run_create_AF_domain_id.nf'
 
 // Foldseek modules
-include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
+// include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
 include { foldseek_run_convertalis } from './modules/run_foldseek_convertails.nf'
 include { foldseek_process_results } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_process_results.nf'
 // ===============================================
@@ -184,6 +188,7 @@ workflow {
         all_model_ids = all_model_ids.take(params.max_entries)
     }
 
+    
     chunked_ids_ch = all_model_ids.collectFile(
             name: 'all_model_ids.txt',
             newLine: true,
@@ -193,12 +198,15 @@ workflow {
         .toList()
         .flatMap { List chunk_files ->
             // Emit a tuple (id, path) where id is the chunk index and path is the chunk file
-            chunk_files.withIndex().collect { cf, idx ->
-                [ idx, cf ]
-            }
+            chunk_files.findAll { cf -> cf.text.readLines().any { it.trim() } }
+                  .withIndex()
+                  .collect { cf, idx -> [ idx, cf ] }
+            
+        
         }
 
     // Extract PDB and CIF files from zip based on chunked ids
+
     unfiltered_pdb_ch = extract_structures_from_zip(chunked_ids_ch, file(params.pdb_zip_file))
 
     cif_files_ch = unfiltered_pdb_ch
@@ -220,17 +228,15 @@ workflow {
         }
 
     
-    converted_pdb_ch = convert_cifs_to_pdb(cif_files_ch
-        .map { id, cif_file -> 
-            [ id, cif_file ] 
-        }
-        .groupTuple()
-    )
+    converted_pdb_ch = convert_cifs_to_pdb(
+    cif_files_ch.map { id, cif_file -> [id, cif_file] }
+)
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
-    
-    filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
+
+
+    filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
     ids_ch = chunked_ids_ch.map { it -> it[1] }
     filtered_pdb_ch = filtered_pdb_ch.map { it -> it[1] }
@@ -296,12 +302,30 @@ workflow {
             chunk_files.withIndex().collect { cf, idx ->
                 [ idx, cf ]
             }
-        }
+        }  
 
+   
+    
+    all_pdb_ch = heavy_chunk_ch.flatten().collect()
+
+
+    ch_grouped_pdbs = consensus_chunks_ch.map { chunk_id, chunk_file ->
+    // Extract IDs from the chunk file
+    def ids = chunk_file.text.readLines().collect { line -> line.split('\t')[0] }
+    // Subset the global PDB list (all_pdb_ch must be a value channel)
+    def matched_pdbs = all_pdb_ch.get().findAll { pdb_path ->
+        ids.contains(pdb_path.getBaseName().replaceFirst(/\.pdb$/, ''))
+    }
+    [chunk_id, matched_pdbs]
+}
+
+
+    
     chopped_pdb_ch = chop_pdb_from_dir(
+        ch_grouped_pdbs, 
         consensus_chunks_ch,
-        heavy_chunk_ch
-    )
+        )
+
 
     // Generate MD5 hashes for domains added a new file and script_ch
     md5_chunks_ch = create_md5(chopped_pdb_ch)
@@ -369,22 +393,30 @@ workflow {
     // =========================================
 
 
-    foldseek_create_db(chopped_pdb_ch) 
+
+    foldseek_db_ch = foldseek_create_db(chopped_pdb_ch)
+
+
+    // Prepare target DB channel
     ch_target_db = channel.fromPath(
         params.foldseek_db_names.collect { db_name ->
             "${params.foldseek_databases_dir}/${db_name}"
         },
         checkIfExists: true
     )
-    ch_target_db.view {f -> "ch_target_db: " + f }
-    
-    // Run foldseek search on the output of process create_foldseek_db and the CATH database
-    fs_search_ch = run_foldseek(
-        foldseek_create_db.out.query_db_dir, ch_target_db 
+
+
+    query_db_target_db_ch = foldseek_db_ch.combine(
+        ch_target_db
     )
+
+
     
-    // Convert results with fs convertalis, pass query_db, CATH_db and output db from run_foldseek
-    fs_m8_ch = foldseek_run_convertalis(fs_search_ch, ch_target_db)
+    fs_search_ch = run_foldseek(
+     query_db_target_db_ch
+    ) 
+    
+    fs_m8_ch = foldseek_run_convertalis(fs_search_ch.combine(ch_target_db))
 
     fs_m8_ch.view { f -> "fs_m8_ch: " + f }
 
@@ -392,11 +424,10 @@ workflow {
     ch_parser_script = channel.value(file(params.parser_script))
 
 
-    // I think this is the end of what I can do with this workflow and I need to take it from here
 
-    // ch_parser_script = channel.fromPath(params.parser_script, checkIfExists: true)    
-    // Now pass the convertalis .m8 and python script as intputs to the parsing process
     fs_parsed_ch = foldseek_process_results(fs_m8_ch, ch_lookup_file, ch_parser_script)
+
+
 
     // Finally combine results together with a similar collectFile statement as used above
     foldseek_ch = fs_parsed_ch.collectFile( 
@@ -407,8 +438,7 @@ workflow {
         sort: { it -> it[0] }
     ) { it -> it[1] }
 
-    // create a dummy foldseek channel for now to allow workflow to run
-    // foldseek_ch = Channel.empty()
+
     // // =========================================
     // // PHASE 7: Final Assembly
     // // =========================================
@@ -419,6 +449,8 @@ workflow {
         collected_md5_ch,
         collected_stride_summaries_ch,
     )
+
+    transformed_consensus_ch.view { f -> "transformed_consensus_ch: " + f }
 
     // // Generate AF domain IDs
     af_domain_ids_ch = run_AF_domain_id(transformed_consensus_ch)

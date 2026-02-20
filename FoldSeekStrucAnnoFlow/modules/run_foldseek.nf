@@ -4,11 +4,11 @@ nextflow.enable.dsl=2
 // This is adapted from the domain-annotation-pipeline foldseek module
 
 process run_foldseek {
-    publishDir "results", mode: 'copy'
+    // publishDir "results", mode: 'copy'
 
     input:
-    tuple val(id), path(query_db_dir)
-    path(target_db)
+    tuple val(id), path(query_db_dir), path(target_db)
+    // path(target_db)
 
 
     output:

@@ -5,8 +5,7 @@ process chop_pdb_from_dir {
 
     input:
     tuple val(id), path(consensus_chunk)
-    path pdb_files
-
+    tuple val(id2), path(consensus_chunk_files)
     output:
     tuple val(id), path('chopped_pdbs/*.pdb')
     
@@ -15,8 +14,8 @@ process chop_pdb_from_dir {
     mkdir -p chopped_pdbs
     
     
-    pdb_files_dir=\$(dirname ${pdb_files})
-    ${params.chop_pdb_script} --consensus ${consensus_chunk} --pdb-dir . --output chopped_pdbs
+    #pdb_files_dir=\$(dirname ${consensus_chunk_files}) cp \${pdb_files_dir}/*.pdb ./
+    ${params.chop_pdb_script} --consensus ${consensus_chunk_files} --pdb-dir . --output chopped_pdbs
     """
 }
 

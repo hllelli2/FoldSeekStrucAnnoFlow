@@ -2,39 +2,46 @@ manifest {
     name        = 'hllelli/FoldSeekStrucAnnoFlow'
     description = 'A Nextflow pipeline for structural annotation by splitting protein structures into domains and running FoldSeek.'
     author      = 'Luc Elliott'
-    maintainer  = 'Luc Elliott'
+    maintainer = 'Luc Elliott'
     version     = '1.0.0'
 }
 
 params {
     // FoldSeekStrucAnnoFlow specific params
-    input_structures_zip = null
-    output_dir = null
-    singularity_image_dir = "/mnt/sdd1/luc/singularity_images"
+    input_structures_zip = null   // Path to zip file containing input PDB structures
+    output_dir = null          // Output directory for results
+    singularity_image_dir = "/mnt/sdd1/luc/singularity_images" // Directory containing Singularity images
 
+
+    // Domain-annotation-pipeline default params, adapted from https://github.com/UCLOrengoGroup/domain-annotation-pipeline/blob/main/nextflow.config
     project_name = 'FoldSeekStrucAnnoFlow_run'
     min_chain_residues = 25
     chunk_size = 5
-    heavy_chunk_size = 5
-    light_chunk_size = 10
-    max_entries = null
+    heavy_chunk_size = 5        // For chainsaw, merizo
+    light_chunk_size = 10       // For quick processes
+    max_entries = null          // Added to supress warnings
     uniprot_csv_file = "${baseDir}/external/domain-annotation-pipeline/assets/bfvd/test_bfvd.ids"
-    pdb_zip_file = null
+    pdb_zip_file = null           // Path to zip file containing PDB structures
     cleanup = true
     debug = false
     USE_GPU = true
     foldseek_db_names = [
-        "cath_v4_4_0_s95_db"
+        // "afdb_swissprot",
+        // "cath50"
+        // "teddb",
+        "cath_v4_4_0_s95_db",
     ]
+
+
+
+
 
     unidoc_dir = "${baseDir}/tools/UniDoc"
     pdb_dir = "./results/pdbs"
 
     // Container external scripts
-    chop_pdb_script = "python3 ${baseDir}/external/domain-annotation-pipeline/docker/script/chop_pdbs.py"
-    cif_to_pdb_script = "python3 ${baseDir}/bin/cif_to_pdb.py"
-    zip_to_ids_script = "python3 ${baseDir}/bin/unzip_file_list.py"
-    extract_structure_script = "python3 ${baseDir}/bin/extract_structures_from_zip.py"
+    chop_pdb_script = "python3 ./external/domain-annotation-pipeline/docker/script/chop_pdbs.py"
+    cif_to_pdb_script = "python3 ./bin/cif_to_pdb.py"
 
     // Container built-in scripts
     chainsaw_script = "python3 ${baseDir}/tools/chainsaw/get_predictions.py"
@@ -45,25 +52,35 @@ params {
     postfilter_script = "python3 ${baseDir}/tools/ted-tools/ted_consensus_1.0/scripts/filter_domains_consensus.py"
     convert_script = "python3 ${baseDir}/tools/convert_merizo_unidoc_files.py"
     combine_script = "python3 ${baseDir}/tools/combine_results.py"
+    // chop_pdb_script = "python3 ${baseDir}/tools/chop_pdbs.py"
     stride_summary_script = "python3 ${baseDir}/tools/create_stride_summary.py"
+    //md5_script = "python3 ${baseDir}/tools/pdb_to_md5.py"
     transform_script = "python3 ${baseDir}/tools/transform_consensus.py"
     globularity_script = "cath-af-cli measure-globularity"
     plddt_script = "python3 ${baseDir}/tools/fetch_avg_plDDT.py"
+    // combine_final_script = "python3 ${baseDir}/tools/combine_results_final.py"
     run_segmentation_script = "bash ${baseDir}/tools/ted-tools/ted_consensus_1.0/run_segmentation.sh"
-
+    // URLs to download target_db and lookup_file if not already present
+    // auto_fetch_foldseek_assets = truea
+    //  Foldseek params
     foldseek_databases_dir = "/mnt/sdd1/luc/foldseek_dbs"
+    // foldseek_assets_dir = "${projectDir}/../foldseek/assets"
+    // // foldseek_db_id = foldseek_db_url.md5()
+    // // foldseek params
+    // cache_dir="${foldseek_assets_dir}/${foldseek_db_id}"
+    // outdir = "${projectDir}/foldseek_results"
     parser_script = "${projectDir}/external/domain-annotation-pipeline/foldseek/bin/format_fs_output.py"
-    foldseek_exec = 'foldseek'
+    foldseek_exec = 'foldseek'  // Foldseek is in path in container profiles
     T_EVALUE_THRESHOLD = 0.476641
     H_COVERAGE_THRESHOLD = 0.459063
-    lookup_file = "${projectDir}/assets/CathDomainList.S95.v4.4.0"
+    lookup_file = "${projectDir}/assets/CathDomainList.S95.v4.4.0" // Double check if this is the same as the db I'm using
     combine_script_path = "${projectDir}/external/domain-annotation-pipeline/docker/script/combine_results_final.py"
+ 
+    
 }
-
 profiles {
     singularity_local {
         includeConfig "${baseDir}/../conf/singularity.config"
-        includeConfig "${baseDir}/../conf/container.config"
         singularity {
             enabled = true
             cacheDir = params.singularity_image_dir
@@ -75,7 +92,6 @@ profiles {
 
     singularity_slurm {
         includeConfig "${baseDir}/../conf/singularity.config"
-        includeConfig "${baseDir}/../conf/container.config"
         singularity {
             enabled = true
             cacheDir = params.singularity_image_dir
@@ -84,8 +100,4 @@ profiles {
             executor = 'slurm'
         }
     }
-}
-
-process {
-    shell = ['/bin/sh', '-e']
 }

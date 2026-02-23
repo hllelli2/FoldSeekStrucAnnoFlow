@@ -77,8 +77,11 @@ include { run_AF_domain_id } from './external/domain-annotation-pipeline/modules
 
 // Foldseek modules
 // include { foldseek_create_db } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_create_db.nf'
-include { foldseek_run_convertalis } from './modules/run_foldseek_convertails.nf'
-include { foldseek_process_results } from './external/domain-annotation-pipeline/foldseek/modules/foldseek_process_results.nf'
+
+// Processess
+include { foldseek_cath } from './processes/foldseek_cath/main.nf'
+include { foldseek_default } from './processes/foldseek_default/main.nf'
+
 // ===============================================
 // HELPER FUNCTIONS
 // ===============================================
@@ -317,7 +320,7 @@ workflow {
         ids.contains(pdb_path.getBaseName().replaceFirst(/\.pdb$/, ''))
     }
     [chunk_id, matched_pdbs]
-}
+    }
 
 
     
@@ -396,6 +399,8 @@ workflow {
 
     foldseek_db_ch = foldseek_create_db(chopped_pdb_ch)
 
+    
+
 
     // Prepare target DB channel
     ch_target_db = channel.fromPath(
@@ -405,38 +410,23 @@ workflow {
         checkIfExists: true
     )
 
+    // split the ch_target_db channel into with cath in name and without cath in name - this is a bit hacky but it allows us to run the cath pipeline on the cath db and a more general pipeline on the other dbs
 
-    query_db_target_db_ch = foldseek_db_ch.combine(
-        ch_target_db
+    ch_target_db_with_cath = ch_target_db.filter { f -> f.name.contains("cath") }
+    ch_target_db_without_cath = ch_target_db.filter { f -> !f.name.contains("cath") }
+
+
+    foldseek_cath_proccessed_results_ch = foldseek_cath(
+        ch_target_db_with_cath,
+        foldseek_db_ch,
+        ch_lookup_file
     )
 
-
+    foldseek_default_ch = foldseek_default(
+        ch_target_db_without_cath,
+        foldseek_db_ch,
+    )
     
-    fs_search_ch = run_foldseek(
-     query_db_target_db_ch
-    ) 
-    
-    fs_m8_ch = foldseek_run_convertalis(fs_search_ch.combine(ch_target_db))
-
-    fs_m8_ch.view { f -> "fs_m8_ch: " + f }
-
-    // Parse output - first create a channel from the location of the python and look_up scripts
-    ch_parser_script = channel.value(file(params.parser_script))
-
-
-
-    fs_parsed_ch = foldseek_process_results(fs_m8_ch, ch_lookup_file, ch_parser_script)
-
-
-
-    // Finally combine results together with a similar collectFile statement as used above
-    foldseek_ch = fs_parsed_ch.collectFile( 
-        name: 'foldseek_parsed_results.tsv',
-        keepHeader: true,
-        skip: 1,
-        storeDir: params.results_dir,
-        sort: { it -> it[0] }
-    ) { it -> it[1] }
 
 
     // // =========================================
@@ -481,7 +471,7 @@ workflow {
         collected_plddt_with_md5_ch,
         collected_domain_quality_ch,
         collected_taxonomy_ch,
-        foldseek_ch,
+        foldseek_cath_proccessed_results_ch,
     )
 
     final_results_ch.view { f -> "final_results_ch: " + f }

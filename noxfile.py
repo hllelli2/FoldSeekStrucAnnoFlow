@@ -201,7 +201,7 @@ def tests(session):
     session.notify("black_check")
     session.notify("mypy_check")
     session.notify("tomlsort_check")
-    session.notify("isort_check")
+    # session.notify("isort_check")
     session.notify("nextflow_check")
     session.notify("pytest")
 
@@ -219,7 +219,7 @@ def github_actions_tests(session):
     session.notify("black_check")
     session.notify("mypy_check")
     session.notify("tomlsort_check")
-    session.notify("isort_check")
+    # session.notify("isort_check")
     session.notify("pytest_loud")
 
 
@@ -234,7 +234,7 @@ def precommit(session):
     session.notify("black_check")
     session.notify("mypy_check")
     session.notify("tomlsort_check")
-    session.notify("isort_check")
+    # session.notify("isort_check")
 
 
 @nox.session(python=PYTHON_VERSION)

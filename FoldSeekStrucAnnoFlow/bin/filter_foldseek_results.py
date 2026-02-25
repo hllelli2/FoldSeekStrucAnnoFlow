@@ -30,8 +30,8 @@ app = typer.Typer()
 
 @app.command()
 def main(
-    input_file: Annotated[Path, "-i", "--input", "Path to the Foldseek output file."],
-    output_file: Annotated[Path, "-o", "--output", "File to write the parsed results."],
+    input_file: Annotated[Path, typer.Option("-i", "--input", help="Path to the Foldseek output file.")],
+    output_file: Annotated[Path, typer.Option("-o", "--output", help="File to write the parsed results.")],
 ) -> None:
     with open(input_file, "r") as infile, open(output_file, "w") as outfile:
         current_query_hits: list[dict] = []

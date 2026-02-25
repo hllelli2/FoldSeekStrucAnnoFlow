@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 process foldseek_create_db {
     
-    publishDir "results/database_dir_${id}", mode: 'copy'
+    // publishDir "results/database_dir_${id}", mode: 'copy'
 
     
     input:

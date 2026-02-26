@@ -381,6 +381,7 @@ workflow {
 
     // Run pLDDT analysis
     plddt_ch = run_plddt(chopped_pdb_ch)
+    
 
     collected_plddt_ch = plddt_ch.collectFile(
         name: "all_plddt.tsv",

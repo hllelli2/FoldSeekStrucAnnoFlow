@@ -18,7 +18,7 @@ process run_foldseek {
     """
     GPU_FLAG=""
     if [ "${params.USE_GPU}" = true ]; then
-        GPU_FLAG="--gpu 0"
+        GPU_FLAG="" # Removing as foldseek container on cluster doesn't have GPU support
     fi
 
 

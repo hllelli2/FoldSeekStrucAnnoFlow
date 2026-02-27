@@ -243,20 +243,11 @@ workflow {
     converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)
 
     // Combine all PDBs (converted and original)
-    all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch)
+    all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
 
-    // Group by id, collect all PDBs for each id into the work dir as '*.pdb'
-    grouped_pdb_ch = all_pdb_ch
-        .groupTuple()
-        .flatMap { id, pdb_files ->
-            channel
-                .from(pdb_files)
-                .collectFile(name: '*.pdb', storeDir: false)
-                .map { collected_pdbs -> tuple(id, collected_pdbs) }
-        }
 
     // Now suitable for filter_pdb process
-    filtered_pdb_ch = filter_pdb(grouped_pdb_ch, params.min_chain_residues)
+    filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
     ids_ch = chunked_ids_ch.map { it -> it[1] }
     filtered_pdb_ch = filtered_pdb_ch.map { it -> it[1] }

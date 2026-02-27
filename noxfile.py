@@ -58,7 +58,6 @@ def install(session):
     )
 
 
-
 @nox.session(python=PYTHON_VERSION)
 def lock(session):
     """

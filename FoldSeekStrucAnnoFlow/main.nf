@@ -231,9 +231,12 @@ workflow {
         }
 
     
-    converted_pdb_ch = convert_cifs_to_pdb(
-    cif_files_ch.map { id, cif_file -> [id, cif_file] }
-)
+    chunked_cif_ch = cif_files_ch
+    .groupTuple()
+    .map { id, files -> [ id, files.collate(10) ] }   // chunk size = 10
+    .flatMap { id, chunked_lists ->
+        chunked_lists.collect { chunk -> [ id, chunk ] }
+    }
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
 

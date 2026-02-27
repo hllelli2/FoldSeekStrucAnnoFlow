@@ -242,11 +242,18 @@ workflow {
 
     converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)
 
+    
+    // converted_pdb_ch.view { f -> "converted_pdb_ch: " + f }
     // Combine all PDBs (converted and original)
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
+    all_pdb_ch = all_pdb_ch.map { id, pdb_lists ->
+        // Flatten the nested list
+        def flat_pdbs = pdb_lists.flatten()
+        tuple(id, flat_pdbs)
+    }
 
+    // all_pdb_ch.view { f -> "all_pdb_ch: " + f }
 
-    // Now suitable for filter_pdb process
     filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
     ids_ch = chunked_ids_ch.map { it -> it[1] }

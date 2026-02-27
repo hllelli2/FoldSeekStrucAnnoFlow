@@ -1,42 +1,42 @@
-Feb-26 18:16:13.737 [main] DEBUG nextflow.cli.Launcher - $> nextflow run FoldSeekStrucAnnoFlow/main.nf -profile singularity_slurm --project_name af3_afum_330_new --pdb_zip_file /home/hllelli2/inputs/foldseekanno/afum_af3.zip -with-dag flow_af3.dot --foldseek_databases_dir /home/hllelli2/foldseek_databases/ --singularity_image_dir /home/hllelli2/singularity_containers
-Feb-26 18:16:14.493 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.10.3
-Feb-26 18:16:14.635 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/hllelli2/.nextflow/plugins; core-plugins: nf-amazon@3.4.3,nf-azure@1.20.2,nf-cloudcache@0.5.0,nf-codecommit@0.5.0,nf-console@1.3.0,nf-google@1.23.4,nf-k8s@1.2.2,nf-tower@1.17.4,nf-wave@1.16.1
-Feb-26 18:16:14.746 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-Feb-26 18:16:14.751 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-Feb-26 18:16:14.762 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
-Feb-26 18:16:14.811 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
-Feb-26 18:16:15.437 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-Feb-26 18:16:16.174 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/nextflow.config
-Feb-26 18:16:16.196 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/nextflow.config
-Feb-26 18:16:16.276 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `singularity_slurm`
-Feb-26 18:16:19.565 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [singularity_local, singularity_slurm]
-Feb-26 18:16:19.642 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
-Feb-26 18:16:19.643 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
-Feb-26 18:16:20.054 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/hllelli2/.nextflow/secrets/store.json
-Feb-26 18:16:20.066 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@5c887052] - activable => nextflow.secret.LocalSecretsProvider@5c887052
-Feb-26 18:16:20.075 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
-Feb-26 18:16:20.133 [main] DEBUG nextflow.cli.CmdRun - Launching `FoldSeekStrucAnnoFlow/main.nf` [nostalgic_picasso] DSL2 - revision: 11fdfd0d13
-Feb-26 18:16:20.310 [main] DEBUG nextflow.Session - Session UUID: 715af80e-2a90-4131-946f-6f1e54828a65
-Feb-26 18:16:20.312 [main] DEBUG nextflow.Session - Run name: nostalgic_picasso
-Feb-26 18:16:20.314 [main] DEBUG nextflow.Session - Executor pool size: 32
-Feb-26 18:16:20.342 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
-Feb-26 18:16:20.352 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=96; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
-Feb-26 18:16:21.361 [main] DEBUG nextflow.cli.CmdRun - 
+Feb-27 11:04:38.758 [main] DEBUG nextflow.cli.Launcher - $> nextflow run FoldSeekStrucAnnoFlow/main.nf -profile singularity_slurm --project_name af3_afum_330_new --pdb_zip_file /home/hllelli2/inputs/foldseekanno/afum_af3.zip -with-dag flow_af3.dot --foldseek_databases_dir /home/hllelli2/foldseek_databases/ --singularity_image_dir /home/hllelli2/singularity_containers
+Feb-27 11:04:39.122 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.10.3
+Feb-27 11:04:39.163 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/hllelli2/.nextflow/plugins; core-plugins: nf-amazon@3.4.3,nf-azure@1.20.2,nf-cloudcache@0.5.0,nf-codecommit@0.5.0,nf-console@1.3.0,nf-google@1.23.4,nf-k8s@1.2.2,nf-tower@1.17.4,nf-wave@1.16.1
+Feb-27 11:04:39.208 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Feb-27 11:04:39.211 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Feb-27 11:04:39.215 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Feb-27 11:04:39.258 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
+Feb-27 11:04:39.456 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Feb-27 11:04:39.508 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/nextflow.config
+Feb-27 11:04:39.516 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/nextflow.config
+Feb-27 11:04:39.554 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `singularity_slurm`
+Feb-27 11:04:40.926 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [singularity_local, singularity_slurm]
+Feb-27 11:04:40.994 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Feb-27 11:04:40.995 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Feb-27 11:04:41.017 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/hllelli2/.nextflow/secrets/store.json
+Feb-27 11:04:41.023 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@78fe204a] - activable => nextflow.secret.LocalSecretsProvider@78fe204a
+Feb-27 11:04:41.027 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Feb-27 11:04:41.050 [main] DEBUG nextflow.cli.CmdRun - Launching `FoldSeekStrucAnnoFlow/main.nf` [spontaneous_colden] DSL2 - revision: ab6cdbbbe9
+Feb-27 11:04:41.119 [main] DEBUG nextflow.Session - Session UUID: 0a7af4ba-1070-431c-b506-af7de95207e8
+Feb-27 11:04:41.120 [main] DEBUG nextflow.Session - Run name: spontaneous_colden
+Feb-27 11:04:41.121 [main] DEBUG nextflow.Session - Executor pool size: 32
+Feb-27 11:04:41.134 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Feb-27 11:04:41.143 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=96; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Feb-27 11:04:41.207 [main] DEBUG nextflow.cli.CmdRun - 
   Version: 25.10.3 build 10983
   Created: 22-01-2026 15:34 UTC (15:34 BST)
   System: Linux 4.18.0-553.104.1.el8_10.x86_64
   Runtime: Groovy 4.0.28 on OpenJDK 64-Bit Server VM 17.0.10+7
   Encoding: UTF-8 (UTF-8)
-  Process: 866609@login01 [10.113.1.4]
-  CPUs: 32 - Mem: 251.3 GB (2.1 GB) - Swap: 4 GB (2 GB)
-Feb-26 18:16:23.733 [main] DEBUG nextflow.Session - Work-dir: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/work [fuseblk]
-Feb-26 18:16:23.982 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
-Feb-26 18:16:24.022 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
-Feb-26 18:16:24.039 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
-Feb-26 18:16:24.477 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
-Feb-26 18:16:24.490 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 33; maxThreads: 1000
-Feb-26 18:16:25.001 [main] DEBUG nextflow.Session - Session start
-Feb-26 18:16:25.040 [main] DEBUG nextflow.Session - DAG file already exists: flow_af3.dot -- enable `dag.overwrite` in your config file to overwrite existing DAG files
+  Process: 1164276@login01 [10.113.1.4]
+  CPUs: 32 - Mem: 251.3 GB (16.1 GB) - Swap: 4 GB (1.9 GB)
+Feb-27 11:04:41.317 [main] DEBUG nextflow.Session - Work-dir: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/work [fuseblk]
+Feb-27 11:04:41.386 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Feb-27 11:04:41.400 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Feb-27 11:04:41.404 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
+Feb-27 11:04:41.476 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Feb-27 11:04:41.489 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 33; maxThreads: 1000
+Feb-27 11:04:41.832 [main] DEBUG nextflow.Session - Session start
+Feb-27 11:04:41.842 [main] DEBUG nextflow.Session - DAG file already exists: flow_af3.dot -- enable `dag.overwrite` in your config file to overwrite existing DAG files
 nextflow.exception.AbortOperationException: DAG file already exists: flow_af3.dot -- enable `dag.overwrite` in your config file to overwrite existing DAG files
 	at nextflow.trace.GraphObserver.onFlowCreate(GraphObserver.groovy:75)
 	at nextflow.Session$_notifyFlowCreate_lambda34.doCall(Session.groovy:1107)
@@ -47,8 +47,8 @@ nextflow.exception.AbortOperationException: DAG file already exists: flow_af3.do
 	at nextflow.cli.CmdRun.run(CmdRun.groovy:429)
 	at nextflow.cli.Launcher.run(Launcher.groovy:515)
 	at nextflow.cli.Launcher.main(Launcher.groovy:675)
-Feb-26 18:16:26.157 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
-Feb-26 18:16:37.217 [main] INFO  nextflow.Nextflow - 
+Feb-27 11:04:44.559 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Feb-27 11:04:51.666 [main] INFO  nextflow.Nextflow - 
 ==============================================
 Domain Annotation Pipeline
 ==============================================
@@ -74,17 +74,102 @@ Foldseek Database Names           : cath_v4_4_0_s95_db
 
 ==============================================
 
-Feb-26 18:16:37.510 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:.*` matches process input_structure_zip_to_ids
-Feb-26 18:16:37.518 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:input_structure_zip_to_ids` matches process input_structure_zip_to_ids
-Feb-26 18:16:37.532 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
-Feb-26 18:16:37.534 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
-Feb-26 18:16:37.576 [main] DEBUG nextflow.executor.Executor - [warm up] executor > slurm
-Feb-26 18:16:37.599 [main] DEBUG n.processor.TaskPollingMonitor - Creating task monitor for executor 'slurm' > capacity: 100; pollInterval: 5s; dumpInterval: 5m 
-Feb-26 18:16:37.606 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: slurm)
-Feb-26 18:16:37.612 [main] DEBUG n.executor.AbstractGridExecutor - Creating executor 'slurm' > queue-stat-interval: 1m
-Feb-26 18:16:37.679 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'input_structure_zip_to_ids': maxForks=0; fair=false; array=0
-Feb-26 18:16:37.967 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:.*` matches process extract_structures_from_zip
-Feb-26 18:16:37.969 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:extract_structures_from_zip` matches process extract_structures_from_zip
-Feb-26 18:16:37.972 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
-Feb-26 18:16:37.972 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
-Feb-26 18:16:37.973 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'extract_structures_from_zip': maxForks=0; fair=false; array=0
+Feb-27 11:04:51.758 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:.*` matches process input_structure_zip_to_ids
+Feb-27 11:04:51.765 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:input_structure_zip_to_ids` matches process input_structure_zip_to_ids
+Feb-27 11:04:51.779 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Feb-27 11:04:51.781 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Feb-27 11:04:51.822 [main] DEBUG nextflow.executor.Executor - [warm up] executor > slurm
+Feb-27 11:04:51.843 [main] DEBUG n.processor.TaskPollingMonitor - Creating task monitor for executor 'slurm' > capacity: 100; pollInterval: 5s; dumpInterval: 5m 
+Feb-27 11:04:51.849 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: slurm)
+Feb-27 11:04:51.856 [main] DEBUG n.executor.AbstractGridExecutor - Creating executor 'slurm' > queue-stat-interval: 1m
+Feb-27 11:04:51.918 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'input_structure_zip_to_ids': maxForks=0; fair=false; array=0
+Feb-27 11:04:52.200 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:.*` matches process extract_structures_from_zip
+Feb-27 11:04:52.203 [main] DEBUG n.script.dsl.ProcessConfigBuilder - Config settings `withName:extract_structures_from_zip` matches process extract_structures_from_zip
+Feb-27 11:04:52.208 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Feb-27 11:04:52.208 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Feb-27 11:04:52.211 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'extract_structures_from_zip': maxForks=0; fair=false; array=0
+Feb-27 11:04:52.285 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_1f399ba9ca7a9871: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_create_AF_domain_id.nf
+  Script_9abf1f8f54a5af3c: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_stride.nf
+  Script_3a171efda75b06de: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/cif_to_pdb.nf
+  Script_f42fe59a181f9ff1: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/processes/foldseek_default/main.nf
+  Script_864efc70c04df8e5: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_filter_consensus.nf
+  Script_3dfb2c8896a24d66: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/run_foldseek_convertails.nf
+  Script_7a15270d091d3314: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/processes/foldseek_cath/main.nf
+  Script_8006abcdc8e61cdf: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/summarise_stride.nf
+  Script_80cd06917018a288: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/create_db.nf
+  Script_43035cb32b6f374c: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/collect_results_add_metadata.nf
+  Script_a087b7d2a37e5aa9: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/transform.nf
+  Script_afdc34069c2ba246: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/pdbs_to_ids.nf
+  Script_dd14ddb5d09b67af: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/run_foldseek.nf
+  Script_799183b47b1587aa: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/filter_foldseek_results.nf
+  Script_ccd68b5ac14f2178: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/convert_unidoc_results.nf
+  Script_fe59b7317433cdec: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/create_dummy_file.nf
+  Script_9f7edf5d86d7d53f: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/collect_results_combine_chopping.nf
+  Script_6530d5e9599fcee0: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/main.nf
+  Script_cb0f0adbac67cdbc: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/filter_pdb.nf
+  Script_b4d78698b0f79ddf: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_plddt.nf
+  Script_bfec161589489493: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/chop_pdbs.nf
+  Script_b884392e0fef5001: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/create_domain_md5.nf
+  Script_f5226fec827b05c6: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/chop_pdb.nf
+  Script_01227f1fa53945f6: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_ted_segmentation.nf
+  Script_d8a3bee26593127b: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_get_consensus.nf
+  Script_0e0bf8f0dd763e57: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/extract_pdbs_from_zip.nf
+  Script_3c440604de0255b3: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_measure_globularity.nf
+  Script_2a33b78ca4d4e13a: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_filter_domains_reformatted.nf
+  Script_7ad89d3d6a9373c1: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/chop_pdb_from_zip.nf
+  Script_5ca6a34eb3753f77: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/convert_merizo_results.nf
+  Script_b0bcf83a15f9427d: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/modules/pdb_symlinks.nf
+  Script_82025ef3992dce11: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/join_plddt_md5.nf
+  Script_79e2ef9b8fd0695e: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_filter_domains.nf
+  Script_b566b9d0abf78b10: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/modules/run_domain_quality.nf
+  Script_5acfe22c9353991f: /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/foldseek/modules/foldseek_process_results.nf
+Feb-27 11:04:52.312 [main] DEBUG nextflow.Session - Session aborted -- Cause: No such property: converted_pdb_ch for class: nextflow.script.WorkflowBinding
+Feb-27 11:04:52.364 [main] DEBUG nextflow.Session - The following nodes are still active:
+  [operator] collectFile
+  [operator] splitText
+  [operator] toList
+  [operator] flatMap
+  [operator] flatMap
+  [operator] flatMap
+  [operator] groupTuple
+  [operator] map
+  [operator] flatMap
+
+Feb-27 11:04:52.384 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=0; peakCpus=0; peakMemory=0; ]
+Feb-27 11:04:52.792 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: slurm) - terminating tasks monitor poll loop
+Feb-27 11:04:52.798 [main] ERROR nextflow.cli.Launcher - @unknown
+groovy.lang.MissingPropertyException: No such property: converted_pdb_ch for class: nextflow.script.WorkflowBinding
+	at groovy.lang.Binding.getVariable(Binding.java:61)
+	at nextflow.script.WorkflowBinding.getVariable(WorkflowBinding.groovy:147)
+	at groovy.lang.Binding.getProperty(Binding.java:117)
+	at nextflow.script.WorkflowBinding.getProperty(WorkflowBinding.groovy:132)
+	at org.codehaus.groovy.runtime.InvokerHelper.getProperty(InvokerHelper.java:167)
+	at groovy.lang.Closure.getPropertyTryThese(Closure.java:325)
+	at groovy.lang.Closure.getPropertyDelegateFirst(Closure.java:315)
+	at groovy.lang.Closure.getProperty(Closure.java:301)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_6530d5e9599fcee0$_runScript_closure1$_closure2.doCall(Script_6530d5e9599fcee0:241)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at nextflow.script.BaseScript.run0(BaseScript.groovy:249)
+	at nextflow.script.BaseScript.run(BaseScript.groovy:260)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy:246)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy)
+	at nextflow.script.ScriptRunner.run(ScriptRunner.groovy:246)
+	at nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:139)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:429)
+	at nextflow.cli.Launcher.run(Launcher.groovy:515)
+	at nextflow.cli.Launcher.main(Launcher.groovy:675)
+Feb-27 11:04:52.801 [Actor Thread 10] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null

@@ -230,13 +230,12 @@ workflow {
             return pdb_files.collect { pdb_file -> [ id, pdb_file ] }
         }
 
-    
     chunked_cif_ch = cif_files_ch
-    .groupTuple()
-    .map { id, files -> [ id, files.collate(10) ] }   // chunk size = 10
-    .flatMap { id, chunked_lists ->
-        chunked_lists.collect { chunk -> [ id, chunk ] }
-    }
+        .map { id, file -> file }
+        .collate(25)
+
+    converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)   
+    converted_pdb_ch.view{ f -> "pdb_ch" +f } 
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
 
@@ -463,7 +462,6 @@ workflow {
         "${params.combine_script_path}", 
         checkIfExists: true
     )
-    collect_results_script_ch.view { "collect_results_script_ch: " + it }
     
     // create a dummy file 
     collected_taxonomy_ch = dummy_taxonomy_file("all_taxonomy.tsv")
@@ -478,7 +476,6 @@ workflow {
         foldseek_cath_proccessed_results_ch,
     )
 
-    final_results_ch.view { f -> "final_results_ch: " + f }
 
     // =========================================
     // PHASE 8: Output Generation
@@ -492,7 +489,6 @@ workflow {
             log.info("Final results written to: ${output_path}")
             return output_path
         }
-        .view {f -> "Final output: ${f}" }
 // 
     // Create completion marker
     final_results_ch
@@ -504,6 +500,5 @@ workflow {
             """.stripIndent()
             return "Workflow completed successfully"
         }
-        .view()
 }
 

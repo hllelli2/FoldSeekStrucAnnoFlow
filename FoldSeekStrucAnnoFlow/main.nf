@@ -231,10 +231,16 @@ workflow {
         }
 
     chunked_cif_ch = cif_files_ch
-        .collate(25)
-        .map { chunk, idx -> [ idx, chunk.collect { it[1] } ] } // Emit (chunk_id, list_of_cif_files)
-    converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)   
-    converted_pdb_ch.view{ f -> "pdb_ch" +f } 
+    .groupTuple()
+    .flatMap { id, cif_files ->
+        cif_files
+            .collate(25)                 // split into chunks of 25
+            .collect { chunk ->
+                tuple(id, chunk)         // emit [id, chunk]
+            }
+    }
+
+    converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)
 
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
 

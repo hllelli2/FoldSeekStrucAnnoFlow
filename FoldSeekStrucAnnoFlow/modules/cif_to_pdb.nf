@@ -14,7 +14,7 @@ process convert_cifs_to_pdb {
 
     """
 
-    python3 "${baseDir}/bin/cif_to_pdb.py" ${cif_files} ./
+    python3 "${baseDir}/bin/cif_to_pdb.py" ${cif_files.join(' ')} ./
     """
     }
 

@@ -66,7 +66,7 @@ include { transform_consensus } from './external/domain-annotation-pipeline/modu
 
 // Analysis modules
 include { run_domain_quality } from './external/domain-annotation-pipeline/modules/run_domain_quality.nf'
-include { run_measure_globularity } from './external/domain-annotation-pipeline/modules/run_measure_globularity.nf'
+include { run_measure_globularity } from './modules/run_measure_globularity.nf' 
 include { run_plddt } from './external/domain-annotation-pipeline/modules/run_plddt.nf'
 include { join_plddt_md5 } from './external/domain-annotation-pipeline/modules/join_plddt_md5.nf'
 

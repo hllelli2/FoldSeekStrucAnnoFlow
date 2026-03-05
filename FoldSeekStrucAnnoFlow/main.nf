@@ -40,7 +40,7 @@ include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 
 
 
-include { filter_pdb } from './external/domain-annotation-pipeline/modules/filter_pdb.nf'
+include { filter_pdb } from './modules/filter_pdb.nf'
 
 // Domain prediction modules
 include { run_ted_segmentation } from './external/domain-annotation-pipeline/modules/run_ted_segmentation.nf'

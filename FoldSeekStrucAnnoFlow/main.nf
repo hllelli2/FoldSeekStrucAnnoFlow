@@ -43,7 +43,7 @@ include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 include { filter_pdb } from './modules/filter_pdb.nf'
 
 // Domain prediction modules
-include { run_ted_segmentation } from './external/domain-annotation-pipeline/modules/run_ted_segmentation.nf'
+include { run_ted_segmentation } from './modules/run_ted_segmentation.nf'
 // Filtering and consensus modules
 include { run_filter_domains } from './external/domain-annotation-pipeline/modules/run_filter_domains.nf'
 include { run_filter_domains_reformatted as run_filter_domains_reformatted_unidoc } from './external/domain-annotation-pipeline/modules/run_filter_domains_reformatted.nf'

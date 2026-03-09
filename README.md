@@ -1,15 +1,32 @@
-# PythonProjectTemplate
-Template for Python projects
+# FoldSeek Annotation Pipeline
+
+
+## Overview
+
+The FoldSeek Annotation Pipeline is currently derived from the UCLOrengoGroup's domain-annotation pipeline, which is available at [https://github.com/UCLOrengoGroup/domain-annotation-pipeline]. This pipeline calls upon their tools to split protein models into domains and annotate them with CATH classifications. To make it runnable on our cluster, we have made some modifications to the original code. The pipeline is designed to be flexible and can be adapted to use more foldseek databases to look against. The pipeline also works on SLURM clusters and allows CIF files to be processed alongside PDBs.
+
+
+### Running the pipeline
+
+Make sure to install go the development setup instructions below before running the pipeline. You'll need to get up to 
+```bash
+nox -s install 
+```
+
+This will install all workflows needed are installed. You'll need to have nexflow installed to run the pipeline, which you can do with the following command:
+
+```bash
+curl -fsSL get.nextflow.io | bash
+```
+
 
 
 ### Development setup
 
-Before we start developing, make sure you have the following tools installed:
+To set up the development environment for the FoldSeek Annotation Pipeline, follow the instructions below. This setup will ensure you have all the necessary tools and dependencies to work on the project effectively.
 
 Prerequisites:
 - pipx
-
-pipx is a tool to help you install and run Python applications in isolated environments. It is all we need to install the rest of the development tools.
 
 1. Install pipx if you haven't already. You can find instructions [here](https://pipxproject.github.io/pipx/installation/).
 
@@ -56,7 +73,6 @@ This command will update the lock files for your dependencies to ensure you have
 
 This command will install the pre-commit hooks defined in the `.pre-commit-config.yaml` file. This helps maintain code quality by running checks before each commit.
 
-That's it! You now have a fully set up development environment for your Python project. You can start coding, and the tools will help you maintain code quality and consistency.
 
    
 

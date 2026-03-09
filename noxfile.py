@@ -44,6 +44,18 @@ def install(session):
       make install
     """
     uv(session, "sync", "--group", "dev")
+    # git clone the main of the domain-annotation-pipeline into FolderSeekStrucAnnoFlow/external/
+    external_dir = PACKAGE_DIR_PATH.joinpath("external")
+    if not external_dir.exists():
+        # make the external directory if it doesn't exist
+        external_dir.mkdir()
+    session.run(
+        "git",
+        "clone",
+        "https://github.com/UCLOrengoGroup/domain-annotation-pipeline.git",
+        str(external_dir.joinpath("domain-annotation-pipeline")),
+        external=True,
+    )
 
 
 @nox.session(python=PYTHON_VERSION)

@@ -40,10 +40,10 @@ include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 
 
 
-include { filter_pdb } from './external/domain-annotation-pipeline/modules/filter_pdb.nf'
+include { filter_pdb } from './modules/filter_pdb.nf'
 
 // Domain prediction modules
-include { run_ted_segmentation } from './external/domain-annotation-pipeline/modules/run_ted_segmentation.nf'
+include { run_ted_segmentation } from './modules/run_ted_segmentation.nf'
 // Filtering and consensus modules
 include { run_filter_domains } from './external/domain-annotation-pipeline/modules/run_filter_domains.nf'
 include { run_filter_domains_reformatted as run_filter_domains_reformatted_unidoc } from './external/domain-annotation-pipeline/modules/run_filter_domains_reformatted.nf'
@@ -66,7 +66,7 @@ include { transform_consensus } from './external/domain-annotation-pipeline/modu
 
 // Analysis modules
 include { run_domain_quality } from './external/domain-annotation-pipeline/modules/run_domain_quality.nf'
-include { run_measure_globularity } from './external/domain-annotation-pipeline/modules/run_measure_globularity.nf'
+include { run_measure_globularity } from './modules/run_measure_globularity.nf' 
 include { run_plddt } from './external/domain-annotation-pipeline/modules/run_plddt.nf'
 include { join_plddt_md5 } from './external/domain-annotation-pipeline/modules/join_plddt_md5.nf'
 
@@ -230,14 +230,29 @@ workflow {
             return pdb_files.collect { pdb_file -> [ id, pdb_file ] }
         }
 
+    chunked_cif_ch = cif_files_ch
+    .groupTuple()
+    .flatMap { id, cif_files ->
+        cif_files
+            .collate(25)                 // split into chunks of 25
+            .collect { chunk ->
+                tuple(id, chunk)         // emit [id, chunk]
+            }
+    }
+
+    converted_pdb_ch = convert_cifs_to_pdb(chunked_cif_ch)
+
     
-    converted_pdb_ch = convert_cifs_to_pdb(
-    cif_files_ch.map { id, cif_file -> [id, cif_file] }
-)
-
+    // converted_pdb_ch.view { f -> "converted_pdb_ch: " + f }
+    // Combine all PDBs (converted and original)
     all_pdb_ch = converted_pdb_ch.concat(pdb_files_ch).groupTuple()
+    all_pdb_ch = all_pdb_ch.map { id, pdb_lists ->
+        // Flatten the nested list
+        def flat_pdbs = pdb_lists.flatten()
+        tuple(id, flat_pdbs)
+    }
 
-
+    // all_pdb_ch.view { f -> "all_pdb_ch: " + f }
 
     filtered_pdb_ch = filter_pdb(all_pdb_ch, params.min_chain_residues)
 
@@ -381,6 +396,7 @@ workflow {
 
     // Run pLDDT analysis
     plddt_ch = run_plddt(chopped_pdb_ch)
+    
 
     collected_plddt_ch = plddt_ch.collectFile(
         name: "all_plddt.tsv",
@@ -459,7 +475,6 @@ workflow {
         "${params.combine_script_path}", 
         checkIfExists: true
     )
-    collect_results_script_ch.view { "collect_results_script_ch: " + it }
     
     // create a dummy file 
     collected_taxonomy_ch = dummy_taxonomy_file("all_taxonomy.tsv")
@@ -474,7 +489,6 @@ workflow {
         foldseek_cath_proccessed_results_ch,
     )
 
-    final_results_ch.view { f -> "final_results_ch: " + f }
 
     // =========================================
     // PHASE 8: Output Generation
@@ -488,7 +502,6 @@ workflow {
             log.info("Final results written to: ${output_path}")
             return output_path
         }
-        .view {f -> "Final output: ${f}" }
 // 
     // Create completion marker
     final_results_ch
@@ -500,6 +513,5 @@ workflow {
             """.stripIndent()
             return "Workflow completed successfully"
         }
-        .view()
 }
 

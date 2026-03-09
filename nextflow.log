@@ -1,0 +1,65 @@
+nohup: ignoring input
+[33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+[33mNextflow 25.10.4 is available - Please consider updating your version to it(B[m
+
+[1m[38;5;232m[48;5;43m N E X T F L O W [0;2m  ~  [mversion 25.10.3[m
+[K
+
+[1m[38;5;232m[48;5;43m N E X T F L O W [0;2m  ~  [mversion 25.10.3[m
+[K
+Launching[35m `FoldSeekStrucAnnoFlow/main.nf` [0;2m[[0;1;36mnostalgic_picasso[0;2m] DSL2 - [36mrevision: [0;36m11fdfd0d13[m
+[K
+Launching[35m `FoldSeekStrucAnnoFlow/main.nf` [0;2m[[0;1;36msleepy_jang[0;2m] DSL2 - [36mrevision: [0;36m11fdfd0d13[m
+[K
+
+==============================================
+Domain Annotation Pipeline
+==============================================
+Project name        : af3_afum_330_new
+UniProt CSV file    : /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/assets/bfvd/test_bfvd.ids
+PDB ZIP file        : /home/hllelli2/inputs/foldseekanno/afum_af3.zip
+Main chunk size     : 5
+Light chunk size    : 10
+Heavy chunk size    : 5
+Min chain residues  : 25
+Max entries (debug) : N/A
+Results dir         : /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/results/af3_afum_330_new
+Debug mode          : false
+GPU usage         : true
+----------------------------------------------
+Foldseek Configuration Information
+----------------------------------------------
+Foldseek target Database Directory : /home/hllelli2/foldseek_databases/
+Foldseek E-value Threshold        : 0.476641
+Foldseek Coverage Threshold       : 0.459063
+Foldseek Executable              : foldseek
+Foldseek Database Names           : cath_v4_4_0_s95_db
+
+==============================================
+
+
+==============================================
+Domain Annotation Pipeline
+==============================================
+Project name        : af3_afum_330_new
+UniProt CSV file    : /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/FoldSeekStrucAnnoFlow/external/domain-annotation-pipeline/assets/bfvd/test_bfvd.ids
+PDB ZIP file        : /home/hllelli2/inputs/foldseekanno/afum_af3.zip
+Main chunk size     : 5
+Light chunk size    : 10
+Heavy chunk size    : 5
+Min chain residues  : 25
+Max entries (debug) : N/A
+Results dir         : /home/hllelli2/Programs/FoldSeekStrucAnnoFlow/results/af3_afum_330_new
+Debug mode          : false
+GPU usage         : true
+----------------------------------------------
+Foldseek Configuration Information
+----------------------------------------------
+Foldseek target Database Directory : /home/hllelli2/foldseek_databases/
+Foldseek E-value Threshold        : 0.476641
+Foldseek Coverage Threshold       : 0.459063
+Foldseek Executable              : foldseek
+Foldseek Database Names           : cath_v4_4_0_s95_db
+
+==============================================
+

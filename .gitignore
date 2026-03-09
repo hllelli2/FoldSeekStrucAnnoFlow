@@ -18,10 +18,11 @@ __pycache__/
 # Nextflow
 .work/
 .nextflow/
-.nextflow.log
+.nextflow.log*
 work/
 dag*
 *.dot
+nextflow
 
 # production / build files
 inputs/

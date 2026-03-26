@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+
+import tempfile
 import shutil
 
 import nox
@@ -27,6 +29,8 @@ def get_package_name():
 PYTHON_VERSION = get_python_version()
 PACKAGE_NAME = get_package_name()
 PACKAGE_DIR_PATH = Path(PACKAGE_NAME).resolve()
+SINGULARITY_DIR = Path("/mnt/sdd1/luc/singularity_images").resolve()
+FOLDSEEK_DB_DIR = Path("/mnt/sdb1/luc/foldseek_databases").resolve()
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.default_venv_backend = "uv"
@@ -197,6 +201,54 @@ def nextflow_check(session):
     )
 
 
+@nox.session(python=PYTHON_VERSION)
+def nextflow_tests(session):
+    """
+    Run Nextflow tests using the built in Nextflow testing framework.
+    """
+    # create temproary symlinks from tests/nextflow/test_file...nf to FoldSeekStrucAnnoFlow/ so that the nextflow tests can find the modules and processes in the main repo.
+    test_files = list(Path("tests/nextflow").rglob("*.nf"))
+    for test_file in test_files:
+        symlink_path = PACKAGE_DIR_PATH.joinpath(test_file.name)
+        print
+        try:
+            if symlink_path.exists():
+                if symlink_path.is_symlink():
+                    symlink_path.unlink()
+                else:
+                    raise FileExistsError(
+                        f"{symlink_path} already exists and is not a symlink. Please remove it before running nextflow tests."
+                    )
+            symlink_path.symlink_to(test_file.resolve())
+            with tempfile.TemporaryDirectory() as temp_dir:
+                session.run(
+                    "nextflow",
+                    "run",
+                    str(symlink_path),
+                    "--pdb_zip_file",
+                    str(PACKAGE_DIR_PATH.joinpath("..", "tests", "data", "test.zip")),
+                    "--heavy_chunk_size",
+                    "1",
+                    "--light_chunk_size",
+                    "1",
+                    "-profile",
+                    "singularity_local",
+                    "--singularity_images_dir",
+                    str(SINGULARITY_DIR),
+                    "--foldseek_databases_dir",
+                    str(FOLDSEEK_DB_DIR),
+                    "--results_dir",
+                    str(Path(temp_dir).joinpath("results")),
+                    "-c",
+                    str(PACKAGE_DIR_PATH.joinpath("nextflow.config")),
+                    external=True,
+                )
+
+        finally:
+            if symlink_path.is_symlink():
+                symlink_path.unlink()
+
+
 #
 # Testing
 #
@@ -295,7 +347,7 @@ def build_singularity(session):
     if args:
         singularity_images_dir = Path(args[0]).resolve()
     else:
-        singularity_images_dir = Path("/mnt/sdd1/luc/singularity_images").resolve()
+        singularity_images_dir = SINGULARITY_DIR
     print("Singularity_dir:", singularity_images_dir)
     singularity_container_dir = Path("containers").resolve()
 

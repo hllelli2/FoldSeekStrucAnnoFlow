@@ -43,7 +43,8 @@ include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
 include { filter_pdb } from './modules/filter_pdb.nf'
 
 // Domain prediction modules
-include { run_ted_segmentation } from './modules/run_ted_segmentation.nf'
+include { run_ted_segmentation } from './processes/run_ted_segmentation/main.nf'
+
 // Filtering and consensus modules
 include { run_filter_domains } from './external/domain-annotation-pipeline/modules/run_filter_domains.nf'
 include { run_filter_domains_reformatted as run_filter_domains_reformatted_unidoc } from './external/domain-annotation-pipeline/modules/run_filter_domains_reformatted.nf'
@@ -265,20 +266,15 @@ workflow {
 
     // deterministic chunking: collect & sort, then chunk
     // required for caching, but waits for all PDBs first
-    heavy_chunk_ch = filtered_pdb_ch
-        .flatten()
-        .toSortedList { it.toString() }   // sort PDB paths deterministically
-        .flatMap { List allFiles ->
-            def chunks = []
-            int step = params.heavy_chunk_size as int
+    heavy_chunk_ch =filtered_pdb_ch
+    .flatten()
+    .toSortedList {f -> f.toString() }     // deterministic order for caching
+    .flatMap { allFiles ->
+        allFiles.collate(params.heavy_chunk_size)
+                .withIndex()
+                .collect { chunk, i -> tuple("${i}", chunk) }
+    }
 
-            (0..<allFiles.size()).step(step).each { i ->
-                int end = Math.min(i + step, allFiles.size())
-                chunks << allFiles.subList(i, end)
-            }
-
-            return chunks
-        }
 
     segmentation_ch = run_ted_segmentation(heavy_chunk_ch)
 
@@ -287,22 +283,27 @@ workflow {
     // =========================================
 
 //     // collect the result for the chainsaw output
-    collected_chainsaw_ch = segmentation_ch.chainsaw.collectFile(
-        name: 'domain_assignments.chainsaw.tsv',
-        storeDir: params.results_dir,
-    )
-    collected_merizo_ch = segmentation_ch.merizo.collectFile(
-        name: 'domain_assignments.merizo.tsv',
-        storeDir: params.results_dir,
-    )
-    collected_unidoc_ch = segmentation_ch.unidoc.collectFile(
-        name: 'domain_assignments.unidoc.tsv',
-        storeDir: params.results_dir,
-    )
-    collected_consensus_ch = segmentation_ch.consensus.collectFile(
+    // collected_chainsaw_ch = segmentation_ch.chainsaw.collectFile(
+    //     name: 'domain_assignments.chainsaw.tsv',
+    //     storeDir: params.results_dir,
+    // )
+    // collected_merizo_ch = segmentation_ch.merizo.collectFile(
+    //     name: 'domain_assignments.merizo.tsv',
+    //     storeDir: params.results_dir,
+    // )
+    // collected_unidoc_ch = segmentation_ch.unidoc.collectFile(
+    //     name: 'domain_assignments.unidoc.tsv',
+    //     storeDir: params.results_dir,
+    // )
+    // collected_consensus_ch = segmentation_ch.consensus.collectFile(
+        // name: 'domain_assignments.consensus.tsv',
+        // storeDir: params.results_dir,
+    // )
+    collected_consensus_ch = segmentation_ch.consensus_ch.collectFile(
         name: 'domain_assignments.consensus.tsv',
         storeDir: params.results_dir,
     )
+
 
     // =========================================
     // PHASE 4: Post-Consensus Processing
@@ -324,7 +325,7 @@ workflow {
 
    
     
-    all_pdb_ch = heavy_chunk_ch.flatten().collect()
+    all_pdb_ch = heavy_chunk_ch.map { f -> f[1] }.flatten().collect()
 
 
     ch_grouped_pdbs = consensus_chunks_ch.map { chunk_id, chunk_file ->
@@ -463,12 +464,12 @@ workflow {
 
 
     // // Collect intermediate results
-    intermediate_results_ch = collect_results(
-        collected_chainsaw_ch,
-        collected_merizo_ch,
-        collected_unidoc_ch,
+    // intermediate_results_ch = collect_results(
+    //     collected_chainsaw_ch,
+    //     collected_merizo_ch,
+    //     collected_unidoc_ch,
         
-    )
+    // )
 
     // Generate final comprehensive results
     collect_results_script_ch = channel.fromPath(

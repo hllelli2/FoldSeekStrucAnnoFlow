@@ -1,7 +1,8 @@
-process run_ted_segmentation {
-    label 'sge_gpu_high'
-    container 'domain-annotation-pipeline-ted-tools'
+#!/usr/bin/env nextflow
 
+nextflow.enable.dsl=2
+
+process run_ted_segmentation {
     input:
     path 'pdb/*'
 

@@ -15,7 +15,20 @@ process run_unidoc {
     """
     OFFSET_RESI=0
     
-    ${params.run_unidoc_script_setup}
+    ln -s /app/ted-tools/ted_consensus_1.0/ted_consensus .
+    UNIDOC_TMP=\$(mktemp -d /tmp/unidoc_XXXXXXXX)
+    mkdir -p \$UNIDOC_TMP/bin
+    mkdir -p \$UNIDOC_TMP/programs/unidoc 
+    mkdir -p \$UNIDOC_TMP/unidoc_temp
+    mkdir -p \$UNIDOC_TMP/unidoc_temp/bin
+    mkdir -p \$UNIDOC_TMP/unidoc_temp/programs/unidoc
+    mkdir -p \$UNIDOC_TMP/unidoc_temp/programs/unidoc/bin
+    cp /app/ted-tools/ted_consensus_1.0/programs/unidoc/bin/UniDoc_struct \$UNIDOC_TMP/unidoc_temp/bin/UniDoc_struct
+    cp /app/ted-tools/ted_consensus_1.0/programs/unidoc/bin/stride \$UNIDOC_TMP/unidoc_temp/bin/stride
+    cp /app/ted-tools/ted_consensus_1.0/programs/unidoc/Run_UniDoc_from_scratch_structure_afdb.py \$UNIDOC_TMP/unidoc_temp/programs/unidoc/Run_UniDoc_from_scratch_structure_afdb.py
+    cp /app/ted-tools/ted_consensus_1.0/programs/unidoc/Run_UniDoc_from_scratch_structure_afdb.py \$UNIDOC_TMP/unidoc_temp/Run_UniDoc_from_scratch_structure_afdb.py
+
+    . ted_consensus/bin/activate
     set -x
     which python3
     python3 -c "import torch; print('CUDA available:', torch.cuda.is_available())"
@@ -27,7 +40,7 @@ process run_unidoc {
     nvidia-smi -L || true
     env | sort
     
-    python3 /tmp/unidoc_temp/Run_UniDoc_from_scratch_structure_afdb.py \
+    python3 \$UNIDOC_TMP/unidoc_temp/Run_UniDoc_from_scratch_structure_afdb.py \
     -l ${targets} --out output/chopping_unidoc.txt \
     --inherit_chopping ${merizo_chopping} \
         > output/chopping_unidoc.log 2>&1

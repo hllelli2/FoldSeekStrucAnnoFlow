@@ -12,8 +12,10 @@ process run_chainsaw {
     tuple val(chunk_id), path('output/chopping_chainsaw.log'), emit: chainsaw_log
 
     script:
-    '''
+    """
     set -x
+    export OMP_NUM_THREADS=${task.cpus}
+    export MKL_NUM_THREADS=${task.cpus}
     OFFSET_RESI=1
     source /app/ted-tools/ted_consensus_1.0/ted_consensus/bin/activate
     which python3
@@ -45,11 +47,11 @@ process run_chainsaw {
         echo "Expected to find output file at output/chopping_chainsaw.txt but it does not exist. Exiting with error."
         exit 1
     fi
-    '''
+    """
 
     stub:
-    '''
+    """
     echo "Stub process for run_chainsaw"
     rsync -av /launchDir/fixtures/debug/run_chainsaw/ ./
-    '''
+    """
 }

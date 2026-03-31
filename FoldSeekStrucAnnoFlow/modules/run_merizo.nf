@@ -16,6 +16,8 @@ process run_merizo {
     script:
     """
     set -x
+    export OMP_NUM_THREADS=${task.cpus}
+    export MKL_NUM_THREADS=${task.cpus}
     OFFSET_RESI=0
     # Activate the ted_consensus python environment
     source /app/ted-tools/ted_consensus_1.0/ted_consensus/bin/activate

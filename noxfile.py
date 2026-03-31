@@ -391,11 +391,6 @@ def nextflow(session):
       e.g. nox -s nextflow -- slurm --input_dir /path/to/inputs
     """
     args = list(session.posargs)
-    profile = "local"
-    if args and "--profile" not in args:
-        args.extend(["--profile", profile])
-    if args and "--input_dir" not in args:
-        args.extend(["--input_dir", str(PACKAGE_DIR_PATH.joinpath("..", "inputs", "test"))])
 
     session.run(
         "nextflow",

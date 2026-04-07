@@ -1,9 +1,16 @@
 from pathlib import Path
 
+import Bio
 import typer
-from Bio.PDB import PDBIO, MMCIFParser
+from Bio.PDB import PDBIO, MMCIFParser, Select
 
 app = typer.Typer()
+
+
+class NoUNKSelect(Select):
+    def accept_residue(self, residue: Bio.PDB.Residue.Residue) -> bool:
+        to_return: bool = residue.get_resname() != "UNK"
+        return to_return
 
 
 @app.command()
@@ -22,7 +29,7 @@ def convert_cif_to_pdb(input_cif: Path, output_pdb: Path) -> None:
 
     io = PDBIO()
     io.set_structure(struc)
-    io.save(str(output_pdb))
+    io.save(str(output_pdb), select=NoUNKSelect())
 
 
 if __name__ == "__main__":

@@ -210,7 +210,7 @@ def nextflow_tests(session):
     test_files = list(Path("tests/nextflow").rglob("*.nf"))
     for test_file in test_files:
         symlink_path = PACKAGE_DIR_PATH.joinpath(test_file.name)
-        print
+
         try:
             if symlink_path.exists():
                 if symlink_path.is_symlink():
@@ -220,29 +220,52 @@ def nextflow_tests(session):
                         f"{symlink_path} already exists and is not a symlink. Please remove it before running nextflow tests."
                     )
             symlink_path.symlink_to(test_file.resolve())
-            with tempfile.TemporaryDirectory() as temp_dir:
-                session.run(
-                    "nextflow",
-                    "run",
-                    str(symlink_path),
-                    "--pdb_zip_file",
-                    str(PACKAGE_DIR_PATH.joinpath("..", "tests", "data", "test.zip")),
-                    "--heavy_chunk_size",
-                    "1",
-                    "--light_chunk_size",
-                    "1",
-                    "-profile",
-                    "singularity_local",
-                    "--singularity_images_dir",
-                    str(SINGULARITY_DIR),
-                    "--foldseek_databases_dir",
-                    str(FOLDSEEK_DB_DIR),
-                    "--results_dir",
-                    str(Path(temp_dir).joinpath("results")),
-                    "-c",
-                    str(PACKAGE_DIR_PATH.joinpath("nextflow.config")),
-                    external=True,
-                )
+            if test_file.name == "test_ted_segmentation.nf":
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    session.run(
+                        "nextflow",
+                        "run",
+                        str(symlink_path),
+                        "--pdb_zip_file",
+                        str(PACKAGE_DIR_PATH.joinpath("..", "tests", "data", "test.zip")),
+                        "--heavy_chunk_size",
+                        "1",
+                        "--light_chunk_size",
+                        "1",
+                        "-profile",
+                        "singularity_local",
+                        "--singularity_images_dir",
+                        str(SINGULARITY_DIR),
+                        "--foldseek_databases_dir",
+                        str(FOLDSEEK_DB_DIR),
+                        "--results_dir",
+                        str(Path(temp_dir).joinpath("results")),
+                        "-c",
+                        str(PACKAGE_DIR_PATH.joinpath("nextflow.config")),
+                        external=True,
+                    )
+            elif test_file.name == "test_UNK_removal.nf":
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    session.run(
+                        "nextflow",
+                        "run",
+                        str(symlink_path),
+                        "--pdb_zip_file",
+                        str(PACKAGE_DIR_PATH.joinpath("..", "tests", "data", "UNK.zip")),
+                        "--results_dir",
+                        str(Path(temp_dir).joinpath("results")),
+                        "-c",
+                        str(PACKAGE_DIR_PATH.joinpath("nextflow.config")),
+                        "-profile",
+                        "singularity_local",
+                        "--singularity_images_dir",
+                        str(SINGULARITY_DIR),
+                        "--foldseek_databases_dir",
+                        str(FOLDSEEK_DB_DIR),
+                        external=True,
+                    )
+            else:
+                pass
 
         finally:
             if symlink_path.is_symlink():

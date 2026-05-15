@@ -15,41 +15,44 @@ workflow foldseek_default {
         foldseek_db_ch
 
     main:
+    ch_target_db_split = ch_target_db.map { db ->
+        def f = file(db)
+        [f.parent, f.name]  
+}
+        ch_target_db_split.view { "split: " + it }
 
-        query_db_target_db_ch = foldseek_db_ch.combine(
-            ch_target_db
-        )
+        // ch_target_db_split = ch_target_db.map { db ->
+        //     [file(db).parent, file(db).name]
+        // }
 
-        // Here move all of this to a seperate process
+        query_db_target_db_ch = foldseek_db_ch.combine(ch_target_db_split)
 
-        query_db_target_db_ch.view { f -> "query_db_target_db_ch: " + f }
-
-        
-        fs_search_ch = run_foldseek(
-        query_db_target_db_ch
-        ) 
-
-        fs_search_ch = fs_search_ch.combine(ch_target_db)
-
-        fs_search_ch.view { f -> "fs_search_ch: " + f }
-
+        fs_search_ch = run_foldseek(query_db_target_db_ch)
 
         fs_m8_ch = foldseek_run_convertalis(fs_search_ch)
 
+
+        fs_m8_ch.view { f -> "fs_m8_ch: " + f }
+
         ch_parser_script = channel.value(file(params.general_parser_script))
 
+        fs_parser_ch = foldseek_default_process_results(
+            fs_m8_ch,  // no .combine() needed - target_db_name already in tuple
+            ch_parser_script
+        )
 
-        fs_parser_ch = foldseek_default_process_results(fs_m8_ch, ch_parser_script)
-        foldseek_ch = fs_parser_ch.collectFile( 
-        name: "foldseek_parsed_results_default.tsv",
-        keepHeader: true,
-        skip: 1,
-        storeDir: params.results_dir,
-        sort: { f -> f[0] }
+        fs_parser_ch.view { f -> "fs_parser_ch: " + f }  // add this
+
+
+        foldseek_ch = fs_parser_ch.collectFile(
+            keepHeader: true,
+            skip: 1,
+            storeDir: params.results_dir,
+            name: "foldseek_parsed_results_non-cath.tsv"
         ) { f -> f[1] }
+
+        foldseek_ch.view { f -> "foldseek_ch: " + f }
     
-
-
 
     emit:
         foldseek_ch

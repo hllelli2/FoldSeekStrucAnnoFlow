@@ -5,15 +5,14 @@ nextflow.enable.dsl=2
 
 process run_foldseek {
     // publishDir "results", mode: 'copy'
-
     input:
-    tuple val(id), path(query_db_dir), path(target_db)
+    tuple val(id), path(query_db_dir), path(target_db_dir), val(target_db_name)
+
     // path(target_db)
 
 
     output:
-    tuple val(id), path(query_db_dir), path("result_db_dir"), emit: search_results
-
+    tuple val(id), path(query_db_dir), path(target_db_dir), val(target_db_name), path("result_db_dir"), emit: search_results
     script:
     """
     GPU_FLAG=""
@@ -26,7 +25,7 @@ process run_foldseek {
     mkdir -p result_db_dir
     ${params.foldseek_exec} search \\
         ${query_db_dir}/query_db \\
-        ${params.foldseek_databases_dir}/${target_db} \\
+        ${target_db_dir}/${target_db_name} \\
         result_db_dir/foldseek_output_db \\
         tmp_foldseek \\
         --cov-mode 5 \\

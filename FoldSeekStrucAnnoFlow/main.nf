@@ -31,7 +31,8 @@ include { collect_pdb_symlinks } from './modules/pdb_symlinks.nf'
 include { chop_pdb_from_dir } from './modules/chop_pdbs.nf'
 include { run_foldseek } from './modules/run_foldseek.nf'
 include { foldseek_create_db } from './modules/create_db.nf'
-include {dummy_taxonomy_file } from './modules/create_dummy_file.nf'
+include { dummy_taxonomy_file } from './modules/create_dummy_file.nf'
+include { match_CATH } from './modules/match_cath.nf'
 
 
 // ===============================================
@@ -102,9 +103,9 @@ def validateParameters() {
     }
     // TODO: Remove this as want to run this purely from pdb or cif files
 
-    if (!params.uniprot_csv_file || !params.pdb_zip_file) {
-        error("Both UniProt CSV file and PDB ZIP file must be specified.")
-    }
+    // if (!params.uniprot_csv_file || !params.pdb_zip_file) {
+    //     error("Both UniProt CSV file and PDB ZIP file must be specified.")
+    // }
 
     // Ensure results directory exists
     if (!file(params.results_dir).exists()) {
@@ -130,7 +131,6 @@ def validateParameters() {
     Domain Annotation Pipeline
     ==============================================
     Project name        : ${params.project_name}
-    UniProt CSV file    : ${params.uniprot_csv_file}
     PDB ZIP file        : ${params.pdb_zip_file}
     Main chunk size     : ${params.chunk_size}
     Light chunk size    : ${params.light_chunk_size}
@@ -139,7 +139,8 @@ def validateParameters() {
     Max entries (debug) : ${params.max_entries ?: 'N/A'}
     Results dir         : ${params.results_dir}
     Debug mode          : ${params.debug}
-    GPU usage         : ${params.USE_GPU}
+    GPU usage           : ${params.USE_GPU}
+    Profile             : ${params.profile ?: 'N/A'}
     ----------------------------------------------
     Foldseek Configuration Information
     ----------------------------------------------
@@ -282,23 +283,6 @@ workflow {
     // PHASE 3: Results Collection & Filtering
     // =========================================
 
-//     // collect the result for the chainsaw output
-    // collected_chainsaw_ch = segmentation_ch.chainsaw.collectFile(
-    //     name: 'domain_assignments.chainsaw.tsv',
-    //     storeDir: params.results_dir,
-    // )
-    // collected_merizo_ch = segmentation_ch.merizo.collectFile(
-    //     name: 'domain_assignments.merizo.tsv',
-    //     storeDir: params.results_dir,
-    // )
-    // collected_unidoc_ch = segmentation_ch.unidoc.collectFile(
-    //     name: 'domain_assignments.unidoc.tsv',
-    //     storeDir: params.results_dir,
-    // )
-    // collected_consensus_ch = segmentation_ch.consensus.collectFile(
-        // name: 'domain_assignments.consensus.tsv',
-        // storeDir: params.results_dir,
-    // )
     collected_consensus_ch = segmentation_ch.consensus_ch.collectFile(
         name: 'domain_assignments.consensus.tsv',
         storeDir: params.results_dir,
@@ -418,7 +402,6 @@ workflow {
 
     
 
-
     // Prepare target DB channel
     ch_target_db = channel.fromPath(
         params.foldseek_db_names.collect { db_name ->
@@ -429,8 +412,11 @@ workflow {
 
     // split the ch_target_db channel into with cath in name and without cath in name - this is a bit hacky but it allows us to run the cath pipeline on the cath db and a more general pipeline on the other dbs
 
-    ch_target_db_with_cath = ch_target_db.filter { f -> f.name.contains("cath") }
-    ch_target_db_without_cath = ch_target_db.filter { f -> !f.name.contains("cath") }
+    ch_target_db_with_cath = ch_target_db.filter { f -> f[-1].name.contains("cath") }
+    ch_target_db_without_cath = ch_target_db.filter { f -> !f[-1].name.contains("cath") }
+
+    ch_target_db_with_cath.view { f -> "ch_target_db_with_cath: " + f }
+    ch_target_db_without_cath.view { f -> "ch_target_db_without_cath: " + f }
 
 
     foldseek_cath_proccessed_results_ch = foldseek_cath(
@@ -444,7 +430,6 @@ workflow {
         foldseek_db_ch,
     )
     
-
 
     // // =========================================
     // // PHASE 7: Final Assembly
@@ -489,14 +474,21 @@ workflow {
         collected_taxonomy_ch,
         foldseek_cath_proccessed_results_ch,
     )
-
-
+    
     // =========================================
     // PHASE 8: Output Generation
     // =========================================
 
     // Ensure final outputs are saved
-    final_results_ch
+    
+
+    final_results_ch.view { f -> "final_results_ch: " + f }
+
+    final_results_ch_with_cath = match_CATH(
+        final_results_ch,
+    )
+
+    final_results_ch_with_cath
         .map { file ->
             def output_path = "${params.results_dir}/final_domain_annotations.tsv"
             file.copyTo(output_path)
@@ -505,14 +497,14 @@ workflow {
         }
 // 
     // Create completion marker
-    final_results_ch
-        .map {
-            def completion_file = file("${params.results_dir}/WORKFLOW_COMPLETED")
-            completion_file.text = """
-            Workflow completed successfully at: ${new Date()}
-            Total processing time: ${workflow.duration}
-            """.stripIndent()
-            return "Workflow completed successfully"
-        }
+    // final_results_ch_with_cath
+        // .map {
+        //     def completion_file = file("${params.results_dir}/WORKFLOW_COMPLETED")
+        //     completion_file.text = """
+        //     Workflow completed successfully at: ${new Date()}
+        //     Total processing time: ${workflow.duration}
+        //     """.stripIndent()
+        //     return "Workflow completed successfully"
+        // }
 }
 

@@ -9,6 +9,8 @@ authors = [{ name = "Luc Elliott", email = "luc1997@liverpool.ac.uk" }]
 dependencies = [
   "biopython",
   "click",
+  "polars",
+  "pyarrow",
   "typer",
 ]
 

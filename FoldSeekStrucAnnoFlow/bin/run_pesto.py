@@ -4,6 +4,7 @@ import os
 import sys
 from glob import glob
 from pathlib import Path
+
 import torch as pt
 from model.config import config_model  # , config_data
 
@@ -18,13 +19,9 @@ from src.dataset import (  # , select_by_sid, select_by_interface_types
     StructuresDataset,
     collate_batch_features,
 )
-from src.structure import (
-    concatenate_chains,  # , data_to_structure,
-    encode_bfactor,
-    split_by_chain,
-)
+from src.structure import concatenate_chains  # , data_to_structure,
+from src.structure import encode_bfactor, split_by_chain
 from src.structure_io import save_pdb  # , read_pdb
-
 from tqdm import tqdm
 
 # from src.scoring import bc_scoring, bc_score_names

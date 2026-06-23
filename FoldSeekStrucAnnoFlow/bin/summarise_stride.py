@@ -17,9 +17,20 @@ import csv
 import os
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 
-def parse_stride_file(file_path):
+class StrideSummary(TypedDict):
+    id: str | None
+    chain_id: str | None
+    num_helix_strand_turn: int
+    num_helix: int
+    num_strand: int
+    num_helix_strand: int
+    num_turn: int
+
+
+def parse_stride_file(file_path: str) -> StrideSummary:
     """
     Parses a STRIDE file and extracts secondary structure information.
 
@@ -36,7 +47,7 @@ def parse_stride_file(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"STRIDE file '{file_path}' does not exist.")
 
-    summary = {
+    summary: StrideSummary = {
         "id": None,
         "chain_id": None,
         "num_helix_strand_turn": 0,
@@ -71,7 +82,7 @@ def parse_stride_file(file_path):
     return summary
 
 
-def write_summary_to_tsv(summaries, output_file):
+def write_summary_to_tsv(summaries: list[StrideSummary], output_file: str) -> None:
     """
     Writes the summarized secondary structure information to a tab-separated CSV file.
 
@@ -103,7 +114,7 @@ def write_summary_to_tsv(summaries, output_file):
         raise IOError(f"Error writing to TSV file '{output_file}': {e}")
 
 
-def main(output_file, stride_dir, stride_suffix=".stride"):
+def main(output_file: str, stride_dir: str, stride_suffix: str = ".stride") -> None:
     """
     Main function to parse multiple STRIDE files and write the summary to a TSV file.
 

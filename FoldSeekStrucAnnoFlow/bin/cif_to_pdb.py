@@ -23,6 +23,14 @@ def main(
         convert_cif_to_pdb(Path(cif_file), output_pdb)
 
 
+def sanitize_pdb(pdb_path: Path) -> None:
+    """Replace non-ASCII bytes in a PDB file with spaces in-place."""
+    raw = pdb_path.read_bytes()
+    sanitized = bytes(b if b < 128 else ord(" ") for b in raw)
+    if sanitized != raw:
+        pdb_path.write_bytes(sanitized)
+
+
 def convert_cif_to_pdb(input_cif: Path, output_pdb: Path) -> None:
     parser = MMCIFParser()
     struc = parser.get_structure("", str(input_cif))
@@ -30,6 +38,7 @@ def convert_cif_to_pdb(input_cif: Path, output_pdb: Path) -> None:
     io = PDBIO()
     io.set_structure(struc)
     io.save(str(output_pdb), select=NoUNKSelect())
+    sanitize_pdb(output_pdb)
 
 
 if __name__ == "__main__":

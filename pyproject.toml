@@ -9,6 +9,7 @@ authors = [{ name = "Luc Elliott", email = "luc1997@liverpool.ac.uk" }]
 dependencies = [
   "biopython",
   "click",
+  "matplotlib",
   "polars",
   "pyarrow",
   "typer",
@@ -61,6 +62,7 @@ exclude = [
   "noxfile.py",
   "tests/*",
   "FoldSeekStrucAnnoFlow/external/*",
+  "FoldSeekStrucAnnoFlow/bin/run_pesto.py",
 ]
 
 [tool.ruff]

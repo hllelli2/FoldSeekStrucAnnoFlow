@@ -58,7 +58,7 @@ def parse_stride_file(file_path: str) -> StrideSummary:
     }
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="latin-1") as f:
             for line in f:
                 line = line.strip()
                 if line.startswith("CHN"):

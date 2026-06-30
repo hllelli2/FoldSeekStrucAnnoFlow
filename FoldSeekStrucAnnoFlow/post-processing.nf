@@ -39,10 +39,12 @@ params.structural_source_dbs = params.structural_source_dbs ?: 'pdb,afdb50,afdb_
 include { filter_interproscan_results } from './modules/filter_interproscan_results.nf'
 include { match_pipeline_names as match_names_cath } from './modules/match_pipeline_names.nf'
 include { match_pipeline_names as match_names_pfam } from './modules/match_pipeline_names.nf'
+include { match_pipeline_names as match_names_raw } from './modules/match_pipeline_names.nf'
 include { compare_cath_annotations } from './modules/compare_cath_annotations.nf'
 include { compare_pfam_annotations } from './modules/compare_pfam_annotations.nf'
 include { diagnose_interpro_coverage } from './modules/diagnose_interpro_coverage.nf'
 include { find_structural_only_hits } from './modules/find_structural_only_hits.nf'
+include { split_no_interpro_coverage } from './modules/split_no_interpro_coverage.nf'
 include { plot_interpro_comparison } from './modules/plot_interpro_comparison.nf'
 include { plot_structural_only_hits } from './modules/plot_structural_only_hits.nf'
 
@@ -133,6 +135,17 @@ workflow {
         'pfam',
     )
 
+    // Mapped against the *raw* InterProScan output (not the Gene3D/Pfam-filtered
+    // one above) so a protein with only e.g. a PANTHER hit still maps successfully,
+    // letting split_no_interpro_coverage tell "no IPS hit at all" apart from
+    // "has other IPS hits, just not Gene3D/Pfam".
+    raw_match_columns_ch = match_names_raw(
+        ch_foldseek_non_cath,
+        ch_interproscan_raw,
+        'query_id',
+        'raw',
+    )
+
     // =========================================
     // PHASE 2: Compare structural calls to InterProScan
     // =========================================
@@ -166,6 +179,16 @@ workflow {
         ch_foldseek_non_cath,
         ch_interproscan,
         pfam_match_columns_ch,
+        params.structural_source_dbs,
+    )
+
+    // Of those gap hits, split out the ones with no InterProScan hit in any
+    // analysis from the ones that have other InterProScan hits (e.g. PANTHER)
+    // but no Gene3D/Pfam, using the raw (unfiltered) InterProScan output.
+    split_no_interpro_coverage(
+        ch_foldseek_non_cath,
+        ch_interproscan_raw,
+        raw_match_columns_ch,
         params.structural_source_dbs,
     )
 

@@ -264,6 +264,24 @@ def nextflow_tests(session):
                         str(FOLDSEEK_DB_DIR),
                         external=True,
                     )
+            elif test_file.name == "test_chainsaw.nf":
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    session.run(
+                        "nextflow",
+                        "run",
+                        str(symlink_path),
+                        "--results_dir",
+                        str(Path(temp_dir).joinpath("results")),
+                        "--test_data_dir",
+                        str(PACKAGE_DIR_PATH.joinpath("..", "tests", "data")),
+                        "-c",
+                        str(PACKAGE_DIR_PATH.joinpath("nextflow.config")),
+                        "-profile",
+                        "singularity_local",
+                        "--singularity_images_dir",
+                        str(SINGULARITY_DIR),
+                        external=True,
+                    )
             else:
                 pass
 

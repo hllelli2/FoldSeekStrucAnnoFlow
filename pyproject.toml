@@ -63,6 +63,7 @@ exclude = [
   "tests/*",
   "FoldSeekStrucAnnoFlow/external/*",
   "FoldSeekStrucAnnoFlow/bin/run_pesto.py",
+  "FoldSeekStrucAnnoFlow/bin/secondary_structure_patch.py",
 ]
 
 [tool.ruff]

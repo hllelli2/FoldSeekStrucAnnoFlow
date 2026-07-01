@@ -34,6 +34,7 @@ process run_foldseek {
         -s 10 \\
         -c ${params.H_COVERAGE_THRESHOLD} \\
         -a \\
+        --split-memory-limit ${params.foldseek_split_memory_limit} \\
         \${GPU_FLAG} 
     
     rm -rf tmp_foldseek

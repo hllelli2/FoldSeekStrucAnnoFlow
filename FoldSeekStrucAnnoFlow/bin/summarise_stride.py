@@ -57,11 +57,13 @@ def parse_stride_file(file_path: str) -> StrideSummary:
         "num_turn": 0,
     }
 
+    found_chn = False
     try:
         with open(file_path, "r", encoding="latin-1") as f:
             for line in f:
                 line = line.strip()
                 if line.startswith("CHN"):
+                    found_chn = True
                     parts = line.split()
                     summary["id"] = Path(file_path).with_suffix(".pdb").name
                     summary["chain_id"] = parts[2]
@@ -78,6 +80,9 @@ def parse_stride_file(file_path: str) -> StrideSummary:
             summary["num_helix_strand"] = summary["num_helix"] + summary["num_strand"]
     except Exception as e:
         raise ValueError(f"Error parsing STRIDE file '{file_path}': {e}")
+
+    if not found_chn:
+        raise ValueError(f"No CHN record found in STRIDE file '{file_path}' (degenerate/empty structure?)")
 
     return summary
 
@@ -123,17 +128,25 @@ def main(output_file: str, stride_dir: str, stride_suffix: str = ".stride") -> N
         stride_files (list): List of paths to STRIDE files.
     """
     summaries = []
-    try:
-        for stride_file in os.listdir(stride_dir):
-            if not stride_file.endswith(stride_suffix):
-                continue
-            print(f"Processing STRIDE file: {stride_file}")
-            summary = parse_stride_file(stride_file)
-            summaries.append(summary)
-        write_summary_to_tsv(summaries, output_file)
-        print(f"Summary successfully written {len(summaries)} summaries to '{output_file}'.")
-    except Exception as e:
-        print(f"Error: {e}")
+    error_count = 0
+
+    stride_filenames = [f for f in os.listdir(stride_dir) if f.endswith(stride_suffix)]
+
+    for stride_file in stride_filenames:
+        stride_path = os.path.join(stride_dir, stride_file)
+        print(f"Processing STRIDE file: {stride_file}")
+        try:
+            summary = parse_stride_file(stride_path)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"WARNING: skipping '{stride_file}': {e}", file=sys.stderr)
+            error_count += 1
+            continue
+        summaries.append(summary)
+
+    write_summary_to_tsv(summaries, output_file)
+    print(f"Summary written: {len(summaries)} of {len(stride_filenames)} STRIDE files summarized to '{output_file}'.")
+    if error_count > 0:
+        print(f"WARNING: {error_count} STRIDE file(s) skipped due to parse errors", file=sys.stderr)
 
     print("Done")
 

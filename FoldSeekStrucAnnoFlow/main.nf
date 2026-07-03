@@ -60,7 +60,7 @@ include { run_filter_consensus } from './external/domain-annotation-pipeline/mod
 include { chop_pdb } from './external/domain-annotation-pipeline/modules/chop_pdb.nf'
 include { chop_pdb_from_zip } from './external/domain-annotation-pipeline/modules/chop_pdb_from_zip.nf'
 include { create_md5 } from './external/domain-annotation-pipeline/modules/create_domain_md5.nf'
-include { run_stride } from './external/domain-annotation-pipeline/modules/run_stride.nf'
+include { run_stride } from './modules/run_stride.nf'
 include { summarise_stride } from './external/domain-annotation-pipeline/modules/summarise_stride.nf'
 include { transform_consensus } from './external/domain-annotation-pipeline/modules/transform.nf'
 
@@ -347,8 +347,10 @@ workflow {
     // =========================================
 
     // Run STRIDE analysis
-    stride_results_ch = run_stride(chopped_pdb_ch)    
-    stride_summaries_ch = summarise_stride(stride_results_ch)
+    stride_results_ch = run_stride(chopped_pdb_ch)
+    stride_summaries_ch = summarise_stride(
+        stride_results_ch.map { id, stride_files, failures -> tuple(id, stride_files) }
+    )
     collected_stride_summaries_ch = stride_summaries_ch.collectFile(
         name: "all_stride_summaries.tsv",
         keepHeader: true,
@@ -356,6 +358,13 @@ workflow {
         storeDir: params.results_dir,
         sort: { it -> it[0] } // sort by chunk id
     ) { it -> it[1] } // use file name to collect
+    collected_stride_failures_ch = stride_results_ch
+        .map { id, stride_files, failures -> tuple(id, failures) }
+        .collectFile(
+            name: "stride_failures.tsv",
+            storeDir: params.results_dir,
+            sort: { it -> it[0] } // sort by chunk id
+        ) { it -> it[1] }
         
     // Run globularity analysis
     globularity_ch = run_measure_globularity(chopped_pdb_ch)

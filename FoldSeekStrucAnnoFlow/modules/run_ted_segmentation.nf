@@ -25,7 +25,7 @@ process run_ted_segmentation {
     set -x
     uname -a
     pwd
-    mkdir output
+    mkdir -p output
     ls -lrta
     ls -l /dev/nvidia* || true
     nvidia-smi -L || true

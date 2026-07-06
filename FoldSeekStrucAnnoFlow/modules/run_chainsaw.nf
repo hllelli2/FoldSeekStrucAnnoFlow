@@ -22,7 +22,7 @@ process run_chainsaw {
     python3 -c "import torch; print('CUDA available:', torch.cuda.is_available())"
     uname -a
     pwd
-    mkdir output
+    mkdir -p output
     mkdir -p pdb
     mv *.pdb pdb/
     ls -lrta

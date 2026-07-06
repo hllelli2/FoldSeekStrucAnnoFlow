@@ -25,7 +25,7 @@ process run_merizo {
     python3 -c "import torch; print('CUDA available:', torch.cuda.is_available())"
     uname -a
     pwd
-    mkdir output
+    mkdir -p output
     ls -lrta
     ls -l /dev/nvidia* || true
     nvidia-smi -L || true
